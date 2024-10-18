@@ -43,7 +43,7 @@ export async function loginAdmin(login) {
 			if (token) {
 				localStorage.setItem("token", token);
 				localStorage.setItem("adminId", adminData.id);
-				localStorage.setItem("adminEmail", adminData.email);
+				localStorage.setItem("email", adminData.email);
 				localStorage.setItem("adminFirstName", adminData.firstName);
 				localStorage.setItem("adminLastName", adminData.lastName);
 				localStorage.setItem("adminAvatar", adminData.avatar);
@@ -80,9 +80,9 @@ export async function registerAdmin(registration) {
 	}
 }
 
-export async function getAdmin(adminId, token) {
+export async function getAdmin(email, token) {
 	try {
-		const response = await api.get(`/admin/show-profile-${adminId}`, {
+		const response = await api.get(`/admin/show-profile/${email}`, {
 			headers: getHeader()
 		})
 		return response.data
@@ -90,6 +90,7 @@ export async function getAdmin(adminId, token) {
 		throw error
 	}
 }
+
 export async function getAllRoles() {
 	try {
 		const result = await api.get("/admin/roles/all", {

@@ -1,5 +1,5 @@
 import Index from "views/Index.js";
-import Profile from "views/examples/Profile.js";
+import Profile from "views/examples/ProfileManager/Profile";
 import Register from "views/examples/Register.js";
 import Login from "views/examples/Login.js";
 import Roles from "views/examples/Roles";

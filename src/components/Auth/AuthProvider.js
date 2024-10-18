@@ -21,12 +21,6 @@ export const AuthProvider = ({ children }) => {
 
   const handleLogout = () => {
     setAdmin(null);
-    localStorage.removeItem("adminId");
-    localStorage.removeItem("adminRole");
-    localStorage.removeItem("firstName");
-    localStorage.removeItem("lastName");
-    localStorage.removeItem("avatar");
-    localStorage.removeItem("token");
   };
 
   return (

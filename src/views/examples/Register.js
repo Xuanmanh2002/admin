@@ -14,7 +14,7 @@ import {
   Col,
 } from "reactstrap";
 import { registerAdmin } from "components/utils/ApiFunctions";
-import {useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 const Register = () => {
   const [registration, setRegistration] = useState({
     firstName: "", lastName: "", birthDate: "", avatar: null, gender: "",
@@ -23,7 +23,7 @@ const Register = () => {
 
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -192,7 +192,7 @@ const Register = () => {
                     name="avatar"
                     type="file"
                     className="form-control"
-                    onChange={handleFileChange} // Thay đổi từ handleInputChange thành handleFileChange
+                    onChange={handleFileChange}
                   />
                 </InputGroup>
               </FormGroup>

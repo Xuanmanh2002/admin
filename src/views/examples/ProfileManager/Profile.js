@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -11,12 +12,48 @@ import {
   Col,
 } from "reactstrap";
 import UserHeader from "components/Headers/UserHeader.js";
+import { getAdmin} from "components/utils/ApiFunctions";
 
 const Profile = () => {
+  const [admin, setAdmin] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    birthDate: "",
+    avatar: "",
+    gender: "",
+    telephone: "",
+    address: "",
+  })
+  const [errorMessage, setErrorMessage] = useState("")
+  const email = localStorage.getItem("email")
+  const token = localStorage.getItem("token")
+  const firstName = localStorage.getItem("firstName")
+
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      try {
+        const adminData = await getAdmin(email, token);
+        setAdmin(adminData);
+      } catch (error) {
+        console.error(error);
+        setErrorMessage("Error fetching admin data");
+      }
+    };
+
+    if (email && token) {
+      fetchAdminData();
+    } else {
+      setErrorMessage("User not logged in");
+    }
+  }, [email, token]);
+
+
   return (
     <>
       <UserHeader />
       <Container className="mt--7" fluid>
+        {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
         <Row>
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
             <Card className="card-profile shadow">
@@ -27,7 +64,11 @@ const Profile = () => {
                       <img
                         alt="..."
                         className="rounded-circle"
-                        src={require("../../assets/img/theme/team-4-800x800.jpg")}
+                        src={
+                          admin.avatar
+                            ? `data:image/jpeg;base64,${admin.avatar}`
+                            : require("../../../assets/img/theme/team-4-800x800.jpg")
+                        }
                       />
                     </a>
                   </div>
@@ -76,7 +117,7 @@ const Profile = () => {
                 </Row>
                 <div className="text-center">
                   <h3>
-                    Jessica Jones
+                    {admin.firstName} {admin.lastName}
                     <span className="font-weight-light">, 27</span>
                   </h3>
                   <div className="h5 font-weight-300">
@@ -175,9 +216,9 @@ const Profile = () => {
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue="Lucky"
+                            defaultValue={admin.firstName}
                             id="input-first-name"
-                            placeholder="First name"
+                            placeholder={admin.firstName}
                             type="text"
                           />
                         </FormGroup>
@@ -202,7 +243,6 @@ const Profile = () => {
                     </Row>
                   </div>
                   <hr className="my-4" />
-                  {/* Address */}
                   <h6 className="heading-small text-muted mb-4">
                     Contact information
                   </h6>

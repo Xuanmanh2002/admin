@@ -11,15 +11,15 @@ import {
 } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "components/Auth/AuthProvider";
-import { checkRoleAdmin, getAdmin } from "components/utils/ApiFunctions";
+import { checkRoleAdmin } from "components/utils/ApiFunctions";
 
 const AdminNavbar = (props) => {
   const { handleLogout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  
 
   const [admin, setAdmin] = useState({
-    id: "",
     firstName: "",
     lastName: "",
     avatar: "",
@@ -27,24 +27,6 @@ const AdminNavbar = (props) => {
   });
 
   const token = localStorage.getItem("token");
-  const adminId = localStorage.getItem("adminId");
-
-  useEffect(() => {
-    console.log("Admin avatar:", admin.avatar);
-  }, [admin.avatar]);
-
-  useEffect(() => {
-    const fetchAdmin = async () => {
-      try {
-        const adminData = await getAdmin(adminId, token);
-        setAdmin(adminData);
-      } catch (error) {
-        console.error("Error fetching admin data:", error);
-      }
-    };
-
-    fetchAdmin();
-  }, [adminId, token]);
 
   useEffect(() => {
     const fetchAdminData = () => {
@@ -117,7 +99,11 @@ const AdminNavbar = (props) => {
               <DropdownToggle className="pr-0" nav>
                 <Media className="align-items-center">
                   <span className="avatar avatar-sm rounded-circle">
-                    <img alt="Avatar" src={admin.avatar}
+                    <img alt="Avatar"  src={
+                          admin.avatar
+                            ? `data:image/jpeg;base64,${admin.avatar}`
+                            : require("../../assets/img/theme/team-4-800x800.jpg")
+                        }
                     />
                   </span>
                   <Media className="ml-2 d-none d-lg-block">

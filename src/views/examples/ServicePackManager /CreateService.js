@@ -94,18 +94,8 @@ const CreateService = () => {
                             </CardHeader>
                             <CardBody>
                                 <Form role="form" onSubmit={handleSubmit}>
-                                    {/* Success message in green */}
-                                    {successMessage && (
-                                        <div className="alert alert-success" style={{ color: "#32CD32" }}>
-                                            {successMessage}
-                                        </div>
-                                    )}
-                                    {/* Error message in red */}
-                                    {errorMessage && (
-                                        <div className="alert alert-danger" style={{ color: "red" }}>
-                                            {errorMessage}
-                                        </div>
-                                    )}
+                                    {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+                                    {successMessage && <div className="alert alert-success">{successMessage}</div>}
                                     <FormGroup>
                                         <label htmlFor="serviceName">Service Name</label>
                                         <Input
@@ -164,7 +154,7 @@ const CreateService = () => {
                                             value={newService.description}
                                             onChange={handleServiceInputChange}
                                             required
-                                            rows="5" 
+                                            rows="5"
                                         />
                                     </FormGroup>
                                     <Button type="submit" color="primary" disabled={!isAdmin}>
