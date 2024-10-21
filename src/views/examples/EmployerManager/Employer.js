@@ -17,7 +17,8 @@ import {
 } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import Header from "components/Headers/Header.js";
-import { getAllEmployers, checkRoleAdmin, deleteCategory } from "components/utils/ApiFunctions";
+import { getAllEmployers, checkRoleAdmin, deleteEmployers } from "components/utils/ApiFunctions";
+import { format } from "date-fns";
 
 const Employer = () => {
   const [employers, setEmployers] = useState([]);
@@ -52,7 +53,7 @@ const Employer = () => {
 
         if (isAdminRole) {
           setIsAdmin(true);
-          const data = await getAllEmployers(); 
+          const data = await getAllEmployers();
 
           if (data.length === 0) {
             setError("No employers available.");
@@ -98,6 +99,26 @@ const Employer = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  const handleDelete = async (email) => {
+    try {
+      const result = await deleteEmployers(email);
+      if (result === "") {
+        setSuccessMessage(`Employers No ${email} was deleted.`);
+        const updatedEmail = await getAllEmployers();
+        setEmployers(updatedEmail);
+        setFilteredEmployers(updatedEmail);
+      } else {
+        setErrorMessage(`Error deleting employers: ${result.message}`);
+      }
+    } catch (error) {
+      setErrorMessage(error.message);
+    }
+    setTimeout(() => {
+      setSuccessMessage("");
+      setErrorMessage("");
+    }, 3000);
+  };
+
   return (
     <>
       <Header />
@@ -127,31 +148,47 @@ const Employer = () => {
                     <th scope="col">First Name</th>
                     <th scope="col">Last Name</th>
                     <th scope="col">Email</th>
+                    <th scope="col">Avatar</th>
+                    <th scope="col">Gender</th>
+                    <th scope="col">Telephone</th>
+                    <th scope="col">Birth Date</th>
+                    <th scope="col">Address</th>
+                    <th scope="col">Company Name</th>
                     <th scope="col">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan="5" className="text-center">Loading...</td>
+                      <td colSpan="11" className="text-center">Loading...</td>
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan="5" className="text-danger text-center">{error}</td>
+                      <td colSpan="11" className="text-danger text-center">{error}</td>
                     </tr>
                   ) : currentEmployers.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="text-center">No employers found.</td>
+                      <td colSpan="11" className="text-center">No employers found.</td>
                     </tr>
                   ) : isAdmin ? (
                     currentEmployers.map((employer, index) => (
                       <tr key={index}>
-                        <th scope="row">
-                          {indexOfFirstEmployers + index + 1}
-                        </th>
+                        <th scope="row">{indexOfFirstEmployers + index + 1}</th>
                         <td>{employer.firstName}</td>
                         <td>{employer.lastName}</td>
                         <td>{employer.email}</td>
+                        <td>
+                          <img
+                            src={`data:image/jpeg;base64,${employer.avatar}`}
+                            alt="avatar"
+                            style={{ width: '50px', height: '50px', borderRadius: '50%' }}
+                          />
+                        </td>
+                        <td>{employer.gender}</td>
+                        <td>{employer.telephone}</td>
+                        <td>{employer.birthDate ? format(new Date(employer.birthDate), 'dd/MM/yyyy') : 'N/A'}</td>
+                        <td>{employer.address}</td>
+                        <td>{employer.companyName}</td>
                         <td>
                           <UncontrolledDropdown>
                             <DropdownToggle className="btn-icon-only text-light" size="sm">
@@ -159,7 +196,7 @@ const Employer = () => {
                             </DropdownToggle>
                             <DropdownMenu className="dropdown-menu-arrow" right>
                               <DropdownItem>Edit</DropdownItem>
-                              <DropdownItem>Delete</DropdownItem>
+                              <DropdownItem onClick={() => handleDelete(employer.email)}>Delete</DropdownItem>
                             </DropdownMenu>
                           </UncontrolledDropdown>
                         </td>
@@ -167,15 +204,22 @@ const Employer = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="5" className="text-center">You do not have permission to view this content.</td>
+                      <td colSpan="11" className="text-center">You do not have permission to view this content.</td>
                     </tr>
                   )}
                 </tbody>
               </Table>
+
               {isAdmin && (
                 <CardFooter className="py-4">
                   <nav aria-label="...">
                     <Pagination className="pagination justify-content-end mb-0">
+                      <PaginationItem disabled={currentPage === 1}>
+                        <PaginationLink
+                          onClick={() => paginate(currentPage - 1)}
+                          previous
+                        />
+                      </PaginationItem>
                       {[...Array(Math.ceil(filteredEmployers.length / employersPerPage))].map((_, i) => (
                         <PaginationItem key={i} active={i + 1 === currentPage}>
                           <PaginationLink onClick={() => paginate(i + 1)}>
@@ -183,6 +227,12 @@ const Employer = () => {
                           </PaginationLink>
                         </PaginationItem>
                       ))}
+                      <PaginationItem disabled={currentPage === Math.ceil(filteredEmployers.length / employersPerPage)}>
+                        <PaginationLink
+                          onClick={() => paginate(currentPage + 1)}
+                          next
+                        />
+                      </PaginationItem>
                     </Pagination>
                   </nav>
                 </CardFooter>

@@ -208,6 +208,12 @@ const Category = () => {
                 <CardFooter className="py-4">
                   <nav aria-label="...">
                     <Pagination className="pagination justify-content-end mb-0">
+                      <PaginationItem disabled={currentPage === 1}>
+                        <PaginationLink
+                          onClick={() => paginate(currentPage - 1)}
+                          previous
+                        />
+                      </PaginationItem>
                       {[...Array(Math.ceil(filteredCategories.length / categoriesPerPage))].map((_, i) => (
                         <PaginationItem key={i} active={i + 1 === currentPage}>
                           <PaginationLink onClick={() => paginate(i + 1)}>
@@ -215,6 +221,12 @@ const Category = () => {
                           </PaginationLink>
                         </PaginationItem>
                       ))}
+                      <PaginationItem disabled={currentPage === Math.ceil(filteredCategories.length / categoriesPerPage)}>
+                        <PaginationLink
+                          onClick={() => paginate(currentPage + 1)}
+                          next
+                        />
+                      </PaginationItem>
                     </Pagination>
                   </nav>
                 </CardFooter>

@@ -211,16 +211,34 @@ const Service = () => {
                 <CardFooter className="py-4">
                   <nav aria-label="...">
                     <Pagination className="pagination justify-content-end mb-0">
-                      {[...Array(Math.ceil(filteredServices.length / servicesPerPage))].map((_, i) => (
-                        <PaginationItem key={i} active={i + 1 === currentPage}>
-                          <PaginationLink onClick={() => paginate(i + 1)}>
+                      <PaginationItem disabled={currentPage === 1}>
+                        <PaginationLink
+                          href="#pablo"
+                          tabIndex="-1"
+                          onClick={() => paginate(currentPage - 1)}
+                        >
+                          <i className="fas fa-angle-left" />
+                        </PaginationLink>
+                      </PaginationItem>
+                      {Array.from({ length: Math.ceil(filteredServices.length / servicesPerPage) }, (_, i) => (
+                        <PaginationItem key={i + 1} active={i + 1 === currentPage}>
+                          <PaginationLink href="#pablo" onClick={() => paginate(i + 1)}>
                             {i + 1}
                           </PaginationLink>
                         </PaginationItem>
                       ))}
+                      <PaginationItem disabled={currentPage === Math.ceil(filteredServices.length / servicesPerPage)}>
+                        <PaginationLink
+                          href="#pablo"
+                          onClick={() => paginate(currentPage + 1)}
+                        >
+                          <i className="fas fa-angle-right" />
+                        </PaginationLink>
+                      </PaginationItem>
                     </Pagination>
                   </nav>
                 </CardFooter>
+
               )}
             </Card>
             {successMessage && <div className="alert alert-success">{successMessage}</div>}

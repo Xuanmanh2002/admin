@@ -44,9 +44,9 @@ export async function loginAdmin(login) {
 				localStorage.setItem("token", token);
 				localStorage.setItem("adminId", adminData.id);
 				localStorage.setItem("email", adminData.email);
-				localStorage.setItem("adminFirstName", adminData.firstName);
-				localStorage.setItem("adminLastName", adminData.lastName);
-				localStorage.setItem("adminAvatar", adminData.avatar);
+				localStorage.setItem("firstName", adminData.firstName);
+				localStorage.setItem("lastName", adminData.lastName);
+				localStorage.setItem("avatar", adminData.avatar);
 
 				const isAdmin = await checkRoleAdmin(token);
 				if (isAdmin) {
@@ -105,6 +105,47 @@ export async function getAllRoles() {
 		throw new Error(`Error fetching roles: ${error.response?.data?.message || error.message}`);
 	}
 }
+
+export async function createRoles(name, description) {
+    const data = {
+        name: name,
+        description: description,
+    };
+
+    try {
+        const response = await api.post("/admin/roles/create", data, {
+            headers: getHeader(),
+        });
+        if (response.status === 200 && response.data.status === "success") {
+            return {
+                success: true,
+                message: response.data.message,
+            };
+        } else {
+            return {
+                success: false,
+                message: response.data.message || "Failed to create roles",
+            };
+        }
+    } catch (error) {
+        return {
+            success: false,
+            message: error.response ? error.response.data.message : error.message,
+        };
+    }
+}
+
+export async function deleteRoles(roleId) {
+	try {
+		const result = await api.delete(`/admin/roles/delete/${roleId}`, {
+			headers: getHeader()
+		});
+		return result.data;
+	} catch (error) {
+		throw new Error(`Error deleting roles: ${error.message}`);
+	}
+}
+
 
 export async function getAllCategories() {
 	try {
@@ -266,5 +307,16 @@ export async function getAllEmployers() {
 	} catch (error) {
 		console.error("Error fetching employers:", error);
 		throw new Error(`Error fetching employers: ${error.response?.data?.message || error.message}`);
+	}
+}
+
+export async function deleteEmployers(email, token) {
+	try {
+		const result = await api.delete(`employer/delete-employer/${email}`, {
+			headers: getHeader()
+		});
+		return result.data;
+	} catch (error) {
+		throw new Error(`Error deleting employers: ${error.message}`);
 	}
 }

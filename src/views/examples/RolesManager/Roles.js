@@ -117,7 +117,7 @@ const Roles = () => {
                     <div style={{ paddingLeft: "10px" }}>
                       <button
                         className="btn btn-primary ms-2"
-                        onClick={() => navigate('/admin/create-category')}
+                        onClick={() => navigate('/admin/create-roles')}
                         style={{ height: "40px" }}
                       >
                         Create
