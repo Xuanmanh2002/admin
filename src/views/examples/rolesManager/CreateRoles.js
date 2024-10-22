@@ -54,6 +54,8 @@ const CreateRoles = () => {
     const handleRolesInputChange = (e) => {
         const { name, value } = e.target;
         setNewRoles({ ...newRoles, [name]: value });
+        setErrorMessage(""); // Clear error message on input change
+        setSuccessMessage(""); // Clear success message on input change
     };
 
     const handleSubmit = async (e) => {
@@ -63,22 +65,23 @@ const CreateRoles = () => {
             return;
         }
 
+        setLoading(true); // Start loading
+
         try {
             const response = await createRoles(newRoles.name, newRoles.description);
+            
             if (response.success) {
-                setSuccessMessage("Role created successfully.");
-                setNewRoles({ name: "", description: "" });
+                setSuccessMessage(response.message);
+                setNewRoles({ name: "", description: "" }); // Reset form fields
                 setErrorMessage("");
             } else {
-                setErrorMessage(response.message || "Failed to create role.");
+                setErrorMessage(response.message);
             }
         } catch (error) {
             setErrorMessage(error.message);
+        } finally {
+            setLoading(false); // End loading
         }
-        setTimeout(() => {
-            setErrorMessage("");
-            setSuccessMessage("");
-        }, 3000);
     };
 
     return (

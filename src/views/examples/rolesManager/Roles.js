@@ -19,19 +19,18 @@ import {
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import Header from "components/Headers/Header.js";
-import { getAllRoles, checkRoleAdmin } from "components/utils/ApiFunctions";
+import { getAllRoles, checkRoleAdmin, deleteRoles } from "components/utils/ApiFunctions";
 
 const Roles = () => {
   const [roles, setRoles] = useState([]);
   const [filteredRoles, setFilteredRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [filter, setFilter] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
-
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -88,6 +87,17 @@ const Roles = () => {
     setCurrentPage(1);
   };
 
+  const handleDeleteRole = async (roleId) => {
+    try {
+      await deleteRoles(roleId);
+      setRoles(roles.filter((role) => role.id !== roleId));
+      setFilteredRoles(filteredRoles.filter((role) => role.id !== roleId));
+      setSuccessMessage("Role deleted successfully!");
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredRoles.slice(indexOfFirstItem, indexOfLastItem);
@@ -126,6 +136,9 @@ const Roles = () => {
                   </div>
                 )}
               </CardHeader>
+              {error && <div className="alert alert-danger">{error}</div>}
+              {successMessage && <div className="alert alert-success">{successMessage}</div>}
+
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
                   <tr>
@@ -168,8 +181,8 @@ const Roles = () => {
                               <i className="fas fa-ellipsis-v" />
                             </DropdownToggle>
                             <DropdownMenu className="dropdown-menu-arrow" right>
-                              <DropdownItem href="#pablo">Edit</DropdownItem>
-                              <DropdownItem href="#pablo">Delete</DropdownItem>
+                              <DropdownItem onClick={() => navigate(`/admin/edit-role/${role.id}`)}>Edit</DropdownItem>
+                              <DropdownItem onClick={() => handleDeleteRole(role.id)}>Delete</DropdownItem>
                             </DropdownMenu>
                           </UncontrolledDropdown>
                         </td>

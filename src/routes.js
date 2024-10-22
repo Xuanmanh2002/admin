@@ -1,17 +1,17 @@
 import Index from "views/Index.js";
-import Profile from "views/examples/ProfileManager/Profile";
+import Profile from "views/examples/profileManager/Profile";
 import Register from "views/examples/Register.js";
 import Login from "views/examples/Login.js";
-import Roles from "views/examples/RolesManager/Roles";
+import Roles from "views/examples/rolesManager/Roles";
 import Icons from "views/examples/Icons.js";
-import Service from "views/examples/ServicePackManager /Service";
-import CreateService from "views/examples/ServicePackManager /CreateService";
-import UpdateService from "views/examples/ServicePackManager /UpdateService";
-import Category from "views/examples/CategoryManager/Category";
-import CreateCategory from "views/examples/CategoryManager/CreateCategory";
-import UpdateCategory from "views/examples/CategoryManager/UpdateCategory";
-import Employer from "views/examples/EmployerManager/Employer";
-import CreateRoles from "views/examples/RolesManager/CreateRoles";
+import Service from "views/examples/servicePackManager /Service";
+import CreateService from "views/examples/servicePackManager /CreateService";
+import UpdateService from "views/examples/servicePackManager /UpdateService";
+import Category from "views/examples/categoryManager/Category";
+import CreateCategory from "views/examples/categoryManager/CreateCategory";
+import UpdateCategory from "views/examples/categoryManager/UpdateCategory";
+import Employer from "views/examples/employerManager/Employer";
+import CreateRoles from "views/examples/rolesManager/CreateRoles";
 
 var routes = [
   {
