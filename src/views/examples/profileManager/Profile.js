@@ -13,6 +13,7 @@ import {
 } from "reactstrap";
 import UserHeader from "components/Headers/UserHeader.js";
 import { getAdmin } from "components/utils/ApiFunctions";
+import { format } from "date-fns";
 
 const Profile = () => {
   const [admin, setAdmin] = useState({
@@ -61,6 +62,7 @@ const Profile = () => {
   };
 
   const age = calculateAge(admin.birthDate);
+
 
   return (
     <>
@@ -242,7 +244,11 @@ const Profile = () => {
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue={admin.birthDate}
+                            defaultValue={
+                              admin.birthDate
+                                ? format(new Date(admin.birthDate), 'yyyy-MM-dd')
+                                : '' 
+                            }
                             id="input-birth-date"
                             type="date"
                           />

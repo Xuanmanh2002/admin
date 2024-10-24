@@ -12,18 +12,18 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "components/Auth/AuthProvider";
 import { checkRoleAdmin } from "components/utils/ApiFunctions";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBell } from '@fortawesome/free-solid-svg-icons'; 
 
 const AdminNavbar = (props) => {
   const { handleLogout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  
-
   const [admin, setAdmin] = useState({
     firstName: "",
     lastName: "",
     avatar: "",
-    roles: [{ id: "", name: "" }]
+    roles: [{ id: "", name: "" }],
   });
 
   const token = localStorage.getItem("token");
@@ -96,19 +96,43 @@ const AdminNavbar = (props) => {
           </Link>
           <Nav className="align-items-center d-none d-md-flex" navbar>
             <UncontrolledDropdown nav>
+              <DropdownToggle className="text-white" nav>
+                <FontAwesomeIcon icon={faBell} size="lg" />
+              </DropdownToggle>
+              <DropdownMenu className="dropdown-menu-arrow" right>
+                <DropdownItem className="noti-title" header tag="div">
+                  <h6 className="text-overflow m-0">Notifications</h6>
+                </DropdownItem>
+                <DropdownItem>
+                  <i className="ni ni-bell-55" />
+                  <span>New message received</span>
+                </DropdownItem>
+                <DropdownItem>
+                  <i className="ni ni-bell-55" />
+                  <span>New task assigned</span>
+                </DropdownItem>
+                <DropdownItem divider />
+                <DropdownItem className="text-center text-muted" disabled>
+                  View all notifications
+                </DropdownItem>
+              </DropdownMenu>
+            </UncontrolledDropdown>
+            <UncontrolledDropdown nav>
               <DropdownToggle className="pr-0" nav>
                 <Media className="align-items-center">
                   <span className="avatar avatar-sm rounded-circle">
-                    <img alt="Avatar"  src={
-                          admin.avatar
-                            ? `data:image/jpeg;base64,${admin.avatar}`
-                            : require("../../assets/img/theme/team-4-800x800.jpg")
-                        }
+                    <img
+                      alt="Avatar"
+                      src={
+                        admin.avatar
+                          ? `data:image/jpeg;base64,${admin.avatar}`
+                          : require("../../assets/img/theme/team-4-800x800.jpg")
+                      }
                     />
                   </span>
                   <Media className="ml-2 d-none d-lg-block">
                     <span className="mb-0 text-sm font-weight-bold">
-                    {admin.firstName} {admin.lastName} 
+                      {admin.firstName} {admin.lastName}
                     </span>
                   </Media>
                 </Media>
