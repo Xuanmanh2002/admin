@@ -15,10 +15,18 @@ import {
 } from "reactstrap";
 import { registerAdmin } from "components/utils/ApiFunctions";
 import { useNavigate } from "react-router-dom";
+
 const Register = () => {
   const [registration, setRegistration] = useState({
-    firstName: "", lastName: "", birthDate: "", avatar: null, gender: "",
-    telephone: "", address: "", email: "", password: ""
+    firstName: "",
+    lastName: "",
+    birthDate: "",
+    avatar: null,
+    gender: "",
+    telephone: "",
+    address: "",
+    email: "",
+    password: "",
   });
 
   const [errorMessage, setErrorMessage] = useState("");
@@ -46,7 +54,6 @@ const Register = () => {
       setSuccessMessage("Registration successful!");
       setErrorMessage("");
       navigate("/auth/login");
-
     } catch (error) {
       setSuccessMessage("");
       setErrorMessage(`Registration error: ${error.message}`);
@@ -57,6 +64,7 @@ const Register = () => {
       setSuccessMessage("");
     }, 5000);
   };
+
   return (
     <>
       <Col lg="6" md="8">
@@ -78,7 +86,7 @@ const Register = () => {
                     src={
                       require("../../assets/img/icons/common/github.svg")
                         .default
-                    }
+                  }
                   />
                 </span>
                 <span className="btn-inner--text">Github</span>
@@ -95,7 +103,7 @@ const Register = () => {
                     src={
                       require("../../assets/img/icons/common/google.svg")
                         .default
-                    }
+                  }
                   />
                 </span>
                 <span className="btn-inner--text">Google</span>
@@ -159,7 +167,8 @@ const Register = () => {
                     type="date"
                     className="form-control"
                     value={registration.birthDate}
-                    onChange={handleInputChange} />
+                    onChange={handleInputChange}
+                  />
                 </InputGroup>
               </FormGroup>
               <FormGroup>
@@ -170,13 +179,17 @@ const Register = () => {
                     </InputGroupText>
                   </InputGroupAddon>
                   <Input
-                    placeholder="Gender"
-                    id="gender"
+                    type="select"
                     name="gender"
-                    type="text"
+                    id="gender"
                     className="form-control"
                     value={registration.gender}
-                    onChange={handleInputChange} />
+                    onChange={handleInputChange}
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                  </Input>
                 </InputGroup>
               </FormGroup>
               <FormGroup>
@@ -210,7 +223,8 @@ const Register = () => {
                     type="text"
                     className="form-control"
                     value={registration.telephone}
-                    onChange={handleInputChange} />
+                    onChange={handleInputChange}
+                  />
                 </InputGroup>
               </FormGroup>
               <FormGroup>
@@ -227,7 +241,8 @@ const Register = () => {
                     type="text"
                     className="form-control"
                     value={registration.address}
-                    onChange={handleInputChange} />
+                    onChange={handleInputChange}
+                  />
                 </InputGroup>
               </FormGroup>
               <FormGroup>
@@ -286,18 +301,17 @@ const Register = () => {
                       className="custom-control-label"
                       htmlFor="customCheckRegister"
                     >
-                      <span className="text-muted">
-                        I agree with the{" "}
-                        <a href="#pablo" onClick={(e) => e.preventDefault()}>
-                          Privacy Policy
-                        </a>
-                      </span>
+                      <span className="text-muted">I agree with the terms and conditions</span>
                     </label>
                   </div>
                 </Col>
               </Row>
               <div className="text-center">
-                <Button className="mt-4" color="primary" type="submit">
+                <Button
+                  className="my-4"
+                  color="primary"
+                  type="submit"
+                >
                   Create account
                 </Button>
               </div>

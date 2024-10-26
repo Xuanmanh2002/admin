@@ -80,6 +80,38 @@ export async function registerAdmin(registration) {
 	}
 }
 
+export async function updateAdmin(email, firstName, lastName, gender, avatarFile, address, telephone, birthDate) {
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("firstName", firstName);
+    formData.append("lastName", lastName);
+    formData.append("gender", gender);
+    formData.append("address", address);
+    formData.append("telephone", telephone);
+    formData.append("birthDate", birthDate);
+    
+    if (avatarFile) {
+        formData.append("avatar", avatarFile); 
+    }
+
+    try {
+        const response = await api.put(`/admin/update/${email}`, formData, {
+            headers: {
+                ...getHeader(),
+                'Content-Type': 'multipart/form-data' 
+            },
+        });
+
+        if (response.status >= 200 && response.status < 300) {
+            return response.data; 
+        } else {
+            throw new Error(`Update failed with status: ${response.status}`);
+        }
+    } catch (error) {
+        throw new Error(error.response?.data?.message || "Error updating admin.");
+    }
+}
+
 export async function getAdmin(email, token) {
 	try {
 		const response = await api.get(`/admin/show-profile/${email}`, {
@@ -107,32 +139,32 @@ export async function getAllRoles() {
 }
 
 export async function createRoles(name, description) {
-    const data = {
-        name: name,
-        description: description,
-    };
+	const data = {
+		name: name,
+		description: description,
+	};
 
-    try {
-        const response = await api.post("/admin/roles/create", data, {
-            headers: getHeader(),
-        });
-        if (response.status === 200 && response.data.status === "success") {
-            return {
-                success: true,
-                message: response.data.message,
-            };
-        } else {
-            return {
-                success: false,
-                message: response.data.message || "Failed to create roles",
-            };
-        }
-    } catch (error) {
-        return {
-            success: false,
-            message: error.response ? error.response.data.message : error.message,
-        };
-    }
+	try {
+		const response = await api.post("/admin/roles/create", data, {
+			headers: getHeader(),
+		});
+		if (response.status === 200 && response.data.status === "success") {
+			return {
+				success: true,
+				message: response.data.message,
+			};
+		} else {
+			return {
+				success: false,
+				message: response.data.message || "Failed to create roles",
+			};
+		}
+	} catch (error) {
+		return {
+			success: false,
+			message: error.response ? error.response.data.message : error.message,
+		};
+	}
 }
 
 export async function deleteRoles(roleId) {
@@ -163,32 +195,32 @@ export async function getAllCategories() {
 }
 
 export async function createCategory(categoryName, description) {
-    const data = {
-        categoryName: categoryName,
-        description: description,
-    };
+	const data = {
+		categoryName: categoryName,
+		description: description,
+	};
 
-    try {
-        const response = await api.post("/admin/category/create", data, {
-            headers: getHeader(),
-        });
-        if (response.status === 200 && response.data.status === "success") {
-            return {
-                success: true,
-                message: response.data.message,
-            };
-        } else {
-            return {
-                success: false,
-                message: response.data.message || "Failed to create category",
-            };
-        }
-    } catch (error) {
-        return {
-            success: false,
-            message: error.response ? error.response.data.message : error.message,
-        };
-    }
+	try {
+		const response = await api.post("/admin/category/create", data, {
+			headers: getHeader(),
+		});
+		if (response.status === 200 && response.data.status === "success") {
+			return {
+				success: true,
+				message: response.data.message,
+			};
+		} else {
+			return {
+				success: false,
+				message: response.data.message || "Failed to create category",
+			};
+		}
+	} catch (error) {
+		return {
+			success: false,
+			message: error.response ? error.response.data.message : error.message,
+		};
+	}
 }
 
 export async function deleteCategory(categoryId) {
@@ -203,19 +235,19 @@ export async function deleteCategory(categoryId) {
 }
 
 export async function updateCategory(categoryId, categoryName, description) {
-    const data = {
-        categoryName: categoryName,
-        description: description,
-    };
+	const data = {
+		categoryName: categoryName,
+		description: description,
+	};
 
-    try {
-        const response = await api.put(`/admin/category/update/${categoryId}`, data, {
-            headers: getHeader(),
-        });
-        return response.status === 200;
-    } catch (error) {
-        throw new Error(error.response?.data?.message || "Error updating category.");
-    }
+	try {
+		const response = await api.put(`/admin/category/update/${categoryId}`, data, {
+			headers: getHeader(),
+		});
+		return response.status === 200;
+	} catch (error) {
+		throw new Error(error.response?.data?.message || "Error updating category.");
+	}
 }
 
 export async function getAllService() {
@@ -234,35 +266,35 @@ export async function getAllService() {
 }
 
 export async function createService(serviceName, price, quantity, validityPeriod, description) {
-    const data = {
-        serviceName: serviceName,
+	const data = {
+		serviceName: serviceName,
 		price: price,
 		quantity: quantity,
 		validityPeriod: validityPeriod,
-        description: description,
-    };
+		description: description,
+	};
 
-    try {
-        const response = await api.post("/admin/service/create", data, {
-            headers: getHeader(),
-        });
-        if (response.status === 200 && response.data.status === "success") {
-            return {
-                success: true,
-                message: response.data.message,
-            };
-        } else {
-            return {
-                success: false,
-                message: response.data.message || "Failed to create service",
-            };
-        }
-    } catch (error) {
-        return {
-            success: false,
-            message: error.response ? error.response.data.message : error.message,
-        };
-    }
+	try {
+		const response = await api.post("/admin/service/create", data, {
+			headers: getHeader(),
+		});
+		if (response.status === 200 && response.data.status === "success") {
+			return {
+				success: true,
+				message: response.data.message,
+			};
+		} else {
+			return {
+				success: false,
+				message: response.data.message || "Failed to create service",
+			};
+		}
+	} catch (error) {
+		return {
+			success: false,
+			message: error.response ? error.response.data.message : error.message,
+		};
+	}
 }
 
 export async function deleteService(serviceId) {
@@ -277,22 +309,22 @@ export async function deleteService(serviceId) {
 }
 
 export async function updateService(servicePackId, serviceName, price, quantity, validityPeriod, description) {
-    const data = {
-        serviceName: serviceName,
+	const data = {
+		serviceName: serviceName,
 		price: price,
 		quantity: quantity,
 		validityPeriod: validityPeriod,
-        description: description
-    };
+		description: description
+	};
 
-    try {
-        const response = await api.put(`/admin/service/update/${servicePackId}`, data, {
-            headers: getHeader(),
-        });
-        return response.status === 200;
-    } catch (error) {
-        throw new Error(error.response?.data?.message || "Error updating service.");
-    }
+	try {
+		const response = await api.put(`/admin/service/update/${servicePackId}`, data, {
+			headers: getHeader(),
+		});
+		return response.status === 200;
+	} catch (error) {
+		throw new Error(error.response?.data?.message || "Error updating service.");
+	}
 }
 
 export async function getAllEmployers() {

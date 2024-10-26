@@ -12,8 +12,9 @@ import {
   Col,
 } from "reactstrap";
 import UserHeader from "components/Headers/UserHeader.js";
-import { getAdmin } from "components/utils/ApiFunctions";
+import { getAdmin, updateAdmin } from "components/utils/ApiFunctions"; // Ensure updateAdmin is imported
 import { format } from "date-fns";
+import { FaEdit } from "react-icons/fa";
 
 const Profile = () => {
   const [admin, setAdmin] = useState({
@@ -27,6 +28,7 @@ const Profile = () => {
     address: "",
   });
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState(""); // New state for success message
   const email = localStorage.getItem("email");
   const token = localStorage.getItem("token");
 
@@ -48,44 +50,119 @@ const Profile = () => {
     }
   }, [email, token]);
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAdmin((prevAdmin) => ({
+          ...prevAdmin,
+          avatar: file,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    document.getElementById("avatar-upload").click();
+  };
+
   const calculateAge = (birthDate) => {
     if (!birthDate) return null;
     const birth = new Date(birthDate);
+    if (isNaN(birth.getTime())) return null; // Check if the date is valid
     const today = new Date();
     let age = today.getFullYear() - birth.getFullYear();
     const monthDiff = today.getMonth() - birth.getMonth();
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
       age--;
     }
-
     return age;
+  };
+
+  const formattedBirthDate = () => {
+    if (!admin.birthDate) return "";
+    const birth = new Date(admin.birthDate);
+    return isNaN(birth.getTime()) ? "" : format(birth, "yyyy-MM-dd");
   };
 
   const age = calculateAge(admin.birthDate);
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setAdmin((prevAdmin) => ({
+      ...prevAdmin,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateAdmin(
+        admin.email,
+        admin.firstName,
+        admin.lastName,
+        admin.gender,
+        admin.avatar,
+        admin.address,
+        admin.telephone,
+        admin.birthDate
+      );
+      setErrorMessage("");
+      setSuccessMessage("Profile updated successfully!"); // Set success message
+    } catch (error) {
+      setErrorMessage(error.message);
+      setSuccessMessage(""); // Clear success message on error
+    }
+  };
 
   return (
     <>
       <UserHeader />
       <Container className="mt--7" fluid>
         {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
+        {successMessage && <div className="alert alert-success">{successMessage}</div>}
         <Row>
           <Col className="order-xl-2 mb-5 mb-xl-0" xl="4">
             <Card className="card-profile shadow">
               <Row className="justify-content-center">
                 <Col className="order-lg-2" lg="3">
-                  <div className="card-profile-image">
-                    <a href="#pablo" onClick={(e) => e.preventDefault()}>
+                  <div className="card-profile-image" style={{ position: "relative" }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      style={{ display: "none" }}
+                      id="avatar-upload"
+                    />
+                    <label htmlFor="avatar-upload" style={{ cursor: "pointer" }}>
                       <img
-                        alt="..."
+                        alt="Avatar"
                         className="rounded-circle"
                         src={
                           admin.avatar
                             ? `data:image/jpeg;base64,${admin.avatar}`
                             : require("../../../assets/img/theme/team-4-800x800.jpg")
                         }
+                        style={{ width: "150px", height: "150px", objectFit: "cover" }}
                       />
-                    </a>
+                    </label>
+                    <FaEdit
+                      onClick={triggerFileInput}
+                      style={{
+                        position: "absolute",
+                        top: "80px",
+                        right: "1px",
+                        cursor: "pointer",
+                        color: "black",
+                        backgroundColor: "white",
+                        borderRadius: "50%",
+                        padding: "7px",
+                        fontSize: "2rem",
+                      }}
+                    />
                   </div>
                 </Col>
               </Row>
@@ -143,17 +220,16 @@ const Profile = () => {
                   <Col className="text-right" xs="4">
                     <Button
                       color="primary"
-                      href="#pablo"
-                      onClick={(e) => e.preventDefault()}
+                      onClick={handleSubmit}
                       size="sm"
                     >
-                      Settings
+                      Update
                     </Button>
                   </Col>
                 </Row>
               </CardHeader>
               <CardBody>
-                <Form>
+                <Form onSubmit={handleSubmit}>
                   <h6 className="heading-small text-muted mb-4">User information</h6>
                   <div className="pl-lg-4">
                     <Row>
@@ -165,7 +241,7 @@ const Profile = () => {
                           <Input
                             className="form-control-alternative"
                             id="input-email"
-                            placeholder={admin.email}
+                            value={admin.email} // Make it a controlled input
                             type="email"
                             readOnly
                           />
@@ -178,9 +254,10 @@ const Profile = () => {
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue={admin.gender}
+                            name="gender"
+                            value={admin.gender}
+                            onChange={handleInputChange}
                             id="input-gender"
-                            placeholder={admin.gender}
                             type="text"
                           />
                         </FormGroup>
@@ -194,9 +271,10 @@ const Profile = () => {
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue={admin.firstName}
+                            name="firstName"
+                            value={admin.firstName}
+                            onChange={handleInputChange}
                             id="input-first-name"
-                            placeholder={admin.firstName}
                             type="text"
                           />
                         </FormGroup>
@@ -208,69 +286,65 @@ const Profile = () => {
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue={admin.lastName}
+                            name="lastName"
+                            value={admin.lastName}
+                            onChange={handleInputChange}
                             id="input-last-name"
-                            placeholder={admin.lastName}
-                            type="text"
-                          />
-                        </FormGroup>
-                      </Col>
-                    </Row>
-                  </div>
-                  <hr className="my-4" />
-                  <h6 className="heading-small text-muted mb-4">Contact information</h6>
-                  <div className="pl-lg-4">
-                    <Row>
-                      <Col md="12">
-                        <FormGroup>
-                          <label className="form-control-label" htmlFor="input-address">
-                            Address
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            defaultValue={admin.address}
-                            id="input-address"
-                            placeholder="Home Address"
                             type="text"
                           />
                         </FormGroup>
                       </Col>
                     </Row>
                     <Row>
-                      <Col lg="4">
-                        <FormGroup>
-                          <label className="form-control-label" htmlFor="input-birth-date">
-                            Birth Date
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            defaultValue={
-                              admin.birthDate
-                                ? format(new Date(admin.birthDate), 'yyyy-MM-dd')
-                                : '' 
-                            }
-                            id="input-birth-date"
-                            type="date"
-                          />
-                        </FormGroup>
-                      </Col>
-                      <Col lg="4">
+                      <Col lg="6">
                         <FormGroup>
                           <label className="form-control-label" htmlFor="input-telephone">
                             Telephone
                           </label>
                           <Input
                             className="form-control-alternative"
-                            defaultValue={admin.telephone}
+                            name="telephone"
+                            value={admin.telephone}
+                            onChange={handleInputChange}
                             id="input-telephone"
-                            placeholder={admin.telephone}
+                            type="text"
+                          />
+                        </FormGroup>
+                      </Col>
+                      <Col lg="6">
+                        <FormGroup>
+                          <label className="form-control-label" htmlFor="input-birth-date">
+                            Birth date
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            name="birthDate"
+                            value={formattedBirthDate()} // Use formatted birth date
+                            onChange={handleInputChange}
+                            id="input-birth-date"
+                            type="date"
+                          />
+                        </FormGroup>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col lg="6">
+                        <FormGroup>
+                          <label className="form-control-label" htmlFor="input-address">
+                            Address
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            name="address"
+                            value={admin.address}
+                            onChange={handleInputChange}
+                            id="input-address"
                             type="text"
                           />
                         </FormGroup>
                       </Col>
                     </Row>
                   </div>
-                  <hr className="my-4" />
                 </Form>
               </CardBody>
             </Card>
