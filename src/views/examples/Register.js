@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Card,
@@ -13,7 +13,7 @@ import {
   Row,
   Col,
 } from "reactstrap";
-import { registerAdmin } from "components/utils/ApiFunctions";
+import { registerAdmin, getAllAddress } from "components/utils/ApiFunctions";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
@@ -24,46 +24,59 @@ const Register = () => {
     avatar: null,
     gender: "",
     telephone: "",
-    address: "",
+    addressId: "",
     email: "",
     password: "",
   });
-
+  const [addresses, setAddresses] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      try {
+        const addressList = await getAllAddress();
+        setAddresses(addressList);
+      } catch (error) {
+        console.error("Error fetching addresses:", error);
+        setErrorMessage("Failed to load addresses");
+      }
+    };
+
+    fetchAddresses();
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setRegistration({ ...registration, [name]: value });
+    setRegistration((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e) => {
-    setRegistration({ ...registration, avatar: e.target.files[0] });
+    setRegistration((prev) => ({ ...prev, avatar: e.target.files[0] }));
   };
 
   const handleRegistration = async (e) => {
     e.preventDefault();
-    try {
-      const formData = new FormData();
-      Object.keys(registration).forEach((key) => {
+    const formData = new FormData();
+    Object.keys(registration).forEach((key) => {
         formData.append(key, registration[key]);
-      });
+    });
 
-      await registerAdmin(formData);
-      setSuccessMessage("Registration successful!");
-      setErrorMessage("");
-      navigate("/auth/login");
+    try {
+        await registerAdmin(formData);
+        setSuccessMessage("Registration successful!");
+        setErrorMessage("");
+        navigate("/auth/login");
     } catch (error) {
-      setSuccessMessage("");
-      setErrorMessage(`Registration error: ${error.message}`);
+        setSuccessMessage("");
+        setErrorMessage(`Registration error: ${error.message || "Unknown error"}`);
     }
-
     setTimeout(() => {
-      setErrorMessage("");
-      setSuccessMessage("");
+        setErrorMessage("");
+        setSuccessMessage("");
     }, 5000);
-  };
+};
 
   return (
     <>
@@ -86,7 +99,7 @@ const Register = () => {
                     src={
                       require("../../assets/img/icons/common/github.svg")
                         .default
-                  }
+                    }
                   />
                 </span>
                 <span className="btn-inner--text">Github</span>
@@ -103,7 +116,7 @@ const Register = () => {
                     src={
                       require("../../assets/img/icons/common/google.svg")
                         .default
-                  }
+                    }
                   />
                 </span>
                 <span className="btn-inner--text">Google</span>
@@ -235,14 +248,19 @@ const Register = () => {
                     </InputGroupText>
                   </InputGroupAddon>
                   <Input
-                    placeholder="Address"
-                    id="address"
-                    name="address"
-                    type="text"
+                    type="select"
+                    name="addressId"
                     className="form-control"
-                    value={registration.address}
+                    value={registration.addressId}
                     onChange={handleInputChange}
-                  />
+                  >
+                    <option value="">Select Address</option>
+                    {addresses.map((address) => (
+                      <option key={address.id} value={address.id}>
+                        {address.name}
+                      </option>
+                    ))}
+                  </Input>
                 </InputGroup>
               </FormGroup>
               <FormGroup>

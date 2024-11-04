@@ -12,7 +12,7 @@ import {
   Col,
 } from "reactstrap";
 import UserHeader from "components/Headers/UserHeader.js";
-import { getAdmin, updateAdmin } from "components/utils/ApiFunctions"; // Ensure updateAdmin is imported
+import { getAdmin, updateAdmin, getAllAddress } from "components/utils/ApiFunctions";
 import { format } from "date-fns";
 import { FaEdit } from "react-icons/fa";
 
@@ -25,10 +25,12 @@ const Profile = () => {
     avatar: "",
     gender: "",
     telephone: "",
-    address: "",
+    addressId: "", // Keep addressId in the state
   });
+  const [addressName, setAddressName] = useState(""); // State to hold the selected address name
+  const [addresses, setAddresses] = useState([]); // State to hold all addresses
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState(""); // New state for success message
+  const [successMessage, setSuccessMessage] = useState("");
   const email = localStorage.getItem("email");
   const token = localStorage.getItem("token");
 
@@ -37,6 +39,16 @@ const Profile = () => {
       try {
         const adminData = await getAdmin(email, token);
         setAdmin(adminData);
+
+        // Fetch all addresses
+        const allAddresses = await getAllAddress();
+        setAddresses(allAddresses);
+
+        // If addressId is available, find the corresponding address name
+        if (adminData.addressId) {
+          const address = allAddresses.find(addr => addr.id === adminData.addressId);
+          setAddressName(address ? address.name : "Unknown");
+        }
       } catch (error) {
         console.error(error);
         setErrorMessage("Error fetching admin data");
@@ -71,7 +83,7 @@ const Profile = () => {
   const calculateAge = (birthDate) => {
     if (!birthDate) return null;
     const birth = new Date(birthDate);
-    if (isNaN(birth.getTime())) return null; // Check if the date is valid
+    if (isNaN(birth.getTime())) return null;
     const today = new Date();
     let age = today.getFullYear() - birth.getFullYear();
     const monthDiff = today.getMonth() - birth.getMonth();
@@ -100,23 +112,23 @@ const Profile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await updateAdmin(
-        admin.email,
-        admin.firstName,
-        admin.lastName,
-        admin.gender,
-        admin.avatar,
-        admin.address,
-        admin.telephone,
-        admin.birthDate
-      );
-      setErrorMessage("");
-      setSuccessMessage("Profile updated successfully!"); // Set success message
+        await updateAdmin(
+            admin.email,              
+            admin.firstName,          
+            admin.lastName,           
+            admin.gender,             
+            admin.avatar,             
+            admin.addressId,          
+            admin.telephone,          
+            admin.birthDate           
+        );
+        setErrorMessage("");  
+        setSuccessMessage("Profile updated successfully!");  
     } catch (error) {
-      setErrorMessage(error.message);
-      setSuccessMessage(""); // Clear success message on error
+        setErrorMessage(error.message);  
+        setSuccessMessage(""); 
     }
-  };
+};
 
   return (
     <>
@@ -201,7 +213,7 @@ const Profile = () => {
                   </h3>
                   <div className="h5 font-weight-300">
                     <i className="ni location_pin mr-2" />
-                    {admin.address}
+                    {addressName} 
                   </div>
                   <a href="#pablo" onClick={(e) => e.preventDefault()}>
                     Show more
@@ -241,7 +253,7 @@ const Profile = () => {
                           <Input
                             className="form-control-alternative"
                             id="input-email"
-                            value={admin.email} // Make it a controlled input
+                            value={admin.email}
                             type="email"
                             readOnly
                           />
@@ -271,10 +283,10 @@ const Profile = () => {
                           </label>
                           <Input
                             className="form-control-alternative"
+                            id="input-first-name"
                             name="firstName"
                             value={admin.firstName}
                             onChange={handleInputChange}
-                            id="input-first-name"
                             type="text"
                           />
                         </FormGroup>
@@ -286,16 +298,31 @@ const Profile = () => {
                           </label>
                           <Input
                             className="form-control-alternative"
+                            id="input-last-name"
                             name="lastName"
                             value={admin.lastName}
                             onChange={handleInputChange}
-                            id="input-last-name"
                             type="text"
                           />
                         </FormGroup>
                       </Col>
                     </Row>
                     <Row>
+                      <Col lg="6">
+                        <FormGroup>
+                          <label className="form-control-label" htmlFor="input-birthdate">
+                            Birth date
+                          </label>
+                          <Input
+                            className="form-control-alternative"
+                            id="input-birthdate"
+                            name="birthDate"
+                            value={formattedBirthDate()}
+                            onChange={handleInputChange}
+                            type="date"
+                          />
+                        </FormGroup>
+                      </Col>
                       <Col lg="6">
                         <FormGroup>
                           <label className="form-control-label" htmlFor="input-telephone">
@@ -303,44 +330,39 @@ const Profile = () => {
                           </label>
                           <Input
                             className="form-control-alternative"
+                            id="input-telephone"
                             name="telephone"
                             value={admin.telephone}
                             onChange={handleInputChange}
-                            id="input-telephone"
                             type="text"
-                          />
-                        </FormGroup>
-                      </Col>
-                      <Col lg="6">
-                        <FormGroup>
-                          <label className="form-control-label" htmlFor="input-birth-date">
-                            Birth date
-                          </label>
-                          <Input
-                            className="form-control-alternative"
-                            name="birthDate"
-                            value={formattedBirthDate()} // Use formatted birth date
-                            onChange={handleInputChange}
-                            id="input-birth-date"
-                            type="date"
                           />
                         </FormGroup>
                       </Col>
                     </Row>
                     <Row>
-                      <Col lg="6">
+                      <Col lg="12">
                         <FormGroup>
                           <label className="form-control-label" htmlFor="input-address">
                             Address
                           </label>
                           <Input
-                            className="form-control-alternative"
-                            name="address"
-                            value={admin.address}
-                            onChange={handleInputChange}
-                            id="input-address"
-                            type="text"
-                          />
+                            type="select"
+                            name="addressId"
+                            onChange={(e) => {
+                              const selectedAddressId = e.target.value;
+                              setAdmin((prevAdmin) => ({ ...prevAdmin, addressId: selectedAddressId }));
+                              const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
+                              setAddressName(selectedAddress ? selectedAddress.name : "");
+                            }}
+                            value={admin.addressId}
+                          >
+                            <option value="">Select an address</option>
+                            {addresses.map((address) => (
+                              <option key={address.id} value={address.id}>
+                                {address.name}
+                              </option>
+                            ))}
+                          </Input>
                         </FormGroup>
                       </Col>
                     </Row>

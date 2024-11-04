@@ -69,27 +69,46 @@ export async function loginAdmin(login) {
 
 export async function registerAdmin(registration) {
 	try {
-		const response = await api.post("/auth/register", registration)
-		return response.data
-	} catch (error) {
-		if (error.reeponse && error.response.data) {
-			throw new Error(error.response.data)
-		} else {
-			throw new Error(`Admin registration error : ${error.message}`)
+	  const formData = new FormData();
+	  formData.append("email", registration.email);
+	  formData.append("password", registration.password);
+	  formData.append("firstName", registration.firstName);
+	  formData.append("lastName", registration.lastName);
+	  formData.append("birthDate", registration.birthDate);
+	  formData.append("gender", registration.gender);
+	  formData.append("telephone", registration.telephone);
+	  formData.append("addressId", registration.addressId);
+	  if (registration.avatar) {
+		formData.append("avatar", registration.avatar);
+	  }
+	  const response = await api.post("/auth/register", formData, {
+		headers: {
+		  "Content-Type": "multipart/form-data" 
 		}
+	  });
+  
+	  return response.data;
+	} catch (error) {
+	  if (error.response && error.response.data) {
+		throw new Error(error.response.data);
+	  } else {
+		throw new Error(`Admin registration error: ${error.message}`);
+	  }
 	}
-}
+  }
 
-export async function updateAdmin(email, firstName, lastName, gender, avatarFile, address, telephone, birthDate) {
+  export async function updateAdmin(email, firstName, lastName, gender, avatarFile, addressId, telephone, birthDate) {
     const formData = new FormData();
-    formData.append("email", email);
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
     formData.append("gender", gender);
-    formData.append("address", address);
     formData.append("telephone", telephone);
-    formData.append("birthDate", birthDate);
+    formData.append("addressId", addressId);
     
+    if (birthDate) {
+        formData.append("birthDate", birthDate);
+    }
+
     if (avatarFile) {
         formData.append("avatar", avatarFile); 
     }
@@ -350,5 +369,19 @@ export async function deleteEmployers(email, token) {
 		return result.data;
 	} catch (error) {
 		throw new Error(`Error deleting employers: ${error.message}`);
+	}
+}
+
+export async function getAllAddress() {
+	try {
+		const result = await api.get("/api/address/all", {
+		});
+		if (result.status === 204 || !result.data || result.data.length === 0) {
+			return [];
+		}
+		return result.data;
+	} catch (error) {
+		console.error("Error fetching address:", error);
+		throw new Error(`Error fetching address: ${error.response?.data?.message || error.message}`);
 	}
 }
