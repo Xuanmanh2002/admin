@@ -69,66 +69,66 @@ export async function loginAdmin(login) {
 
 export async function registerAdmin(registration) {
 	try {
-	  const formData = new FormData();
-	  formData.append("email", registration.email);
-	  formData.append("password", registration.password);
-	  formData.append("firstName", registration.firstName);
-	  formData.append("lastName", registration.lastName);
-	  formData.append("birthDate", registration.birthDate);
-	  formData.append("gender", registration.gender);
-	  formData.append("telephone", registration.telephone);
-	  formData.append("addressId", registration.addressId);
-	  if (registration.avatar) {
-		formData.append("avatar", registration.avatar);
-	  }
-	  const response = await api.post("/auth/register", formData, {
-		headers: {
-		  "Content-Type": "multipart/form-data" 
+		const formData = new FormData();
+		formData.append("email", registration.email);
+		formData.append("password", registration.password);
+		formData.append("firstName", registration.firstName);
+		formData.append("lastName", registration.lastName);
+		formData.append("birthDate", registration.birthDate);
+		formData.append("gender", registration.gender);
+		formData.append("telephone", registration.telephone);
+		formData.append("addressId", registration.addressId);
+		if (registration.avatar) {
+			formData.append("avatar", registration.avatar);
 		}
-	  });
-  
-	  return response.data;
+		const response = await api.post("/auth/register", formData, {
+			headers: {
+				"Content-Type": "multipart/form-data"
+			}
+		});
+
+		return response.data;
 	} catch (error) {
-	  if (error.response && error.response.data) {
-		throw new Error(error.response.data);
-	  } else {
-		throw new Error(`Admin registration error: ${error.message}`);
-	  }
+		if (error.response && error.response.data) {
+			throw new Error(error.response.data);
+		} else {
+			throw new Error(`Admin registration error: ${error.message}`);
+		}
 	}
-  }
+}
 
-  export async function updateAdmin(email, firstName, lastName, gender, avatarFile, addressId, telephone, birthDate) {
-    const formData = new FormData();
-    formData.append("firstName", firstName);
-    formData.append("lastName", lastName);
-    formData.append("gender", gender);
-    formData.append("telephone", telephone);
-    formData.append("addressId", addressId);
-    
-    if (birthDate) {
-        formData.append("birthDate", birthDate);
-    }
+export async function updateAdmin(email, firstName, lastName, gender, avatarFile, addressId, telephone, birthDate) {
+	const formData = new FormData();
+	formData.append("firstName", firstName);
+	formData.append("lastName", lastName);
+	formData.append("gender", gender);
+	formData.append("telephone", telephone);
+	formData.append("addressId", addressId);
 
-    if (avatarFile) {
-        formData.append("avatar", avatarFile); 
-    }
+	if (birthDate) {
+		formData.append("birthDate", birthDate);
+	}
 
-    try {
-        const response = await api.put(`/admin/update/${email}`, formData, {
-            headers: {
-                ...getHeader(),
-                'Content-Type': 'multipart/form-data' 
-            },
-        });
+	if (avatarFile) {
+		formData.append("avatar", avatarFile);
+	}
 
-        if (response.status >= 200 && response.status < 300) {
-            return response.data; 
-        } else {
-            throw new Error(`Update failed with status: ${response.status}`);
-        }
-    } catch (error) {
-        throw new Error(error.response?.data?.message || "Error updating admin.");
-    }
+	try {
+		const response = await api.put(`/admin/update/${email}`, formData, {
+			headers: {
+				...getHeader(),
+				'Content-Type': 'multipart/form-data'
+			},
+		});
+
+		if (response.status >= 200 && response.status < 300) {
+			return response.data;
+		} else {
+			throw new Error(`Update failed with status: ${response.status}`);
+		}
+	} catch (error) {
+		throw new Error(error.response?.data?.message || "Error updating admin.");
+	}
 }
 
 export async function getAdmin(email, token) {
@@ -200,9 +200,7 @@ export async function deleteRoles(roleId) {
 
 export async function getAllCategories() {
 	try {
-		const result = await api.get("/admin/category/all", {
-			headers: getHeader(),
-		});
+		const result = await api.get("/admin/category/all");
 		if (result.status === 204 || !result.data || result.data.length === 0) {
 			return [];
 		}
@@ -383,5 +381,142 @@ export async function getAllAddress() {
 	} catch (error) {
 		console.error("Error fetching address:", error);
 		throw new Error(`Error fetching address: ${error.response?.data?.message || error.message}`);
+	}
+}
+
+export async function getAllCustomer() {
+	try {
+		const result = await api.get("/api/customer/list", {
+		});
+		if (result.status === 204 || !result.data || result.data.length === 0) {
+			return [];
+		}
+		return result.data;
+	} catch (error) {
+		console.error("Error fetching customers:", error);
+		throw new Error(`Error fetching customers: ${error.response?.data?.message || error.message}`);
+	}
+}
+
+export async function deleteCustomer(email, token) {
+	try {
+		const result = await api.delete(`api/delete/${email}`, {
+		});
+		return result.data;
+	} catch (error) {
+		throw new Error(`Error deleting customers: ${error.message}`);
+	}
+}
+
+export async function getAllJob() {
+	try {
+		const token = localStorage.getItem("token");
+		const adminId = localStorage.getItem("adminId");
+		if (!token || !adminId) {
+			throw new Error("User is not authenticated or adminId is not found.");
+		}
+		const result = await api.get("/employer/job/all", {
+			headers: {
+				Authorization: `Bearer ${token}`,
+				"Content-Type": "application/json"
+			}
+		});
+		if (result.status === 204 || !result.data || result.data.length === 0) {
+			return [];
+		}
+		return result.data;
+	} catch (error) {
+		console.error("Error fetching job:", error);
+		throw new Error(`Error fetching job: ${error.response?.data?.message || error.message}`);
+	}
+}
+
+export async function deleteJob(jobId) {
+	try {
+		const result = await api.delete(`/employer/job/delete/${jobId}`, {
+			headers: getHeader()
+		});
+		return result.data;
+	} catch (error) {
+		throw new Error(`Error deleting jobs: ${error.message}`);
+	}
+}
+
+export async function getAllOrder() {
+	try {
+		const token = localStorage.getItem("token");
+		const adminId = localStorage.getItem("adminId");
+		if (!token || !adminId) {
+			throw new Error("User is not authenticated or adminId is not found.");
+		}
+		const result = await api.get("/api/order/all", {
+			headers: {
+				Authorization: `Bearer ${token}`,
+				"Content-Type": "application/json"
+			}
+		});
+		if (result.status === 204 || !result.data || result.data.length === 0) {
+			return [];
+		}
+		return result.data;
+	} catch (error) {
+		console.error("Error fetching order:", error);
+		throw new Error(`Error fetching order: ${error.response?.data?.message || error.message}`);
+	}
+}
+
+export async function getAllOrderDetail() {
+	try {
+		const result = await api.get("/api/order/all-order-detail", {
+			headers: getHeader()
+		});
+		if (result.status === 204 || !result.data || result.data.length === 0) {
+			return [];
+		}
+		return result.data;
+	} catch (error) {
+		console.error("Error fetching order details:", error);
+		throw new Error(`Error fetching order details: ${error.response?.data?.message || error.message}`);
+	}
+}
+
+export async function deleteOrder(orderId) {
+	try {
+		const response = await api.delete(`api/order/delete/${orderId}`, {
+			headers: getHeader(),
+		});
+
+		if (response.status >= 200 && response.status < 300) {
+			return {
+				success: true,
+				message: "Order deleted successfully",
+			};
+		} else {
+			return {
+				success: false,
+				message: response.data || "Failed to delete order",
+			};
+		}
+	} catch (error) {
+		return {
+			success: false,
+			message: error.response?.data || error.message || "Error deleting order",
+		};
+	}
+}
+
+export async function getOrderDetails(orderId) {
+	try {
+		const response = await api.get(`/api/order/all-order-detail/${orderId}`, {
+			headers: getHeader()
+		});
+		if (response.status >= 200 && response.status < 300) {
+			return response.data;
+		} else {
+			throw new Error(`Failed to fetch order details: ${response.status}`);
+		}
+	} catch (error) {
+		console.error("Error fetching order details:", error);
+		throw new Error(`Error fetching order details: ${error.message}`);
 	}
 }

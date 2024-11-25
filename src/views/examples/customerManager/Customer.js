@@ -17,26 +17,26 @@ import {
 } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import Header from "components/Headers/Header.js";
-import { getAllEmployers, checkRoleAdmin, deleteEmployers, getAllAddress } from "components/utils/ApiFunctions";
+import { getAllCustomer, checkRoleAdmin, deleteCustomer, getAllAddress } from "components/utils/ApiFunctions";
 import { format } from "date-fns";
 
-const Employer = () => {
-  const [employers, setEmployers] = useState([]);
+const Customer = () => {
+  const [customers, setCustomers] = useState([]);
   const [addresses, setAddresses] = useState([]);
-  const [filteredEmployers, setFilteredEmployers] = useState([]);
+  const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const employersPerPage = 5;
+  const customersPerPage = 5;
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const verifyAdminAndFetchEmployers = async () => {
+    const verifyAdminAndFetchCustomers = async () => {
       setLoading(true);
 
       try {
@@ -63,25 +63,25 @@ const Employer = () => {
         const allAddresses = await getAllAddress();
         setAddresses(allAddresses);
 
-        const data = await getAllEmployers();
+        const data = await getAllCustomer();
         if (data.length === 0) {
-          setError("No employers available.");
+          setError("No customers available.");
         } else {
-          const employersWithAddress = data.map((employer) => {
-            const address = allAddresses.find(addr => addr.id === employer.addressId);
-            return { ...employer, addressName: address ? address.name : "Unknown" };
+          const customersWithAddress = data.map((customer) => {
+            const address = allAddresses.find(addr => addr.id === customer.addressId);
+            return { ...customer, addressName: address ? address.name : "Unknown" };
           });
-          setEmployers(employersWithAddress);
-          setFilteredEmployers(employersWithAddress);
+          setCustomers(customersWithAddress);
+          setFilteredCustomers(customersWithAddress);
         }
       } catch (error) {
-        setError(error.message || "An error occurred while fetching employers.");
+        setError(error.message || "An error occurred while fetching customers.");
       } finally {
         setLoading(false);
       }
     };
 
-    verifyAdminAndFetchEmployers();
+    verifyAdminAndFetchCustomers();
   }, [navigate]);
 
   const handleFilterChange = (e) => {
@@ -89,33 +89,33 @@ const Employer = () => {
     setFilter(searchTerm);
 
     if (searchTerm === "") {
-      setFilteredEmployers(employers);
+      setFilteredCustomers(customers);
     } else {
-      const filtered = employers.filter((employer) =>
-        employer.email?.toLowerCase().includes(searchTerm) ||
-        employer.firstName?.toLowerCase().includes(searchTerm) ||
-        employer.lastName?.toLowerCase().includes(searchTerm)
+      const filtered = customers.filter((customer) =>
+        customer.email?.toLowerCase().includes(searchTerm) ||
+        customer.firstName?.toLowerCase().includes(searchTerm) ||
+        customer.lastName?.toLowerCase().includes(searchTerm)
       );
-      setFilteredEmployers(filtered);
+      setFilteredCustomers(filtered);
     }
   };
 
-  const indexOfLastEmployers = currentPage * employersPerPage;
-  const indexOfFirstEmployers = indexOfLastEmployers - employersPerPage;
-  const currentEmployers = filteredEmployers.slice(indexOfFirstEmployers, indexOfLastEmployers);
+  const indexOfLastCustomer = currentPage * customersPerPage;
+  const indexOfFirstCustomer = indexOfLastCustomer - customersPerPage;
+  const currentCustomers = filteredCustomers.slice(indexOfFirstCustomer, indexOfLastCustomer);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const handleDelete = async (email) => {
     try {
-      const result = await deleteEmployers(email);
-      if (result === "") {
-        setSuccessMessage(`Employers No ${email} was deleted.`);
-        const updatedEmail = await getAllEmployers();
-        setEmployers(updatedEmail);
-        setFilteredEmployers(updatedEmail);
+      const result = await deleteCustomer(email);
+      if (!result) {
+        setSuccessMessage(`Customer with email ${email} was deleted successfully.`);
+        const updatedCustomers = await getAllCustomer();
+        setCustomers(updatedCustomers);
+        setFilteredCustomers(updatedCustomers);
       } else {
-        setErrorMessage(`Error deleting employers: ${result.message}`);
+        setErrorMessage(`Error deleting customer: ${result.message}`);
       }
     } catch (error) {
       setErrorMessage(error.message);
@@ -134,12 +134,12 @@ const Employer = () => {
           <div className="col">
             <Card className="shadow">
               <CardHeader className="border-0 d-flex justify-content-between align-items-center">
-                <h3 className="mb-0">Employers Table</h3>
+                <h3 className="mb-0">Customers Table</h3>
                 {isAdmin && (
                   <div className="d-flex align-items-center">
                     <Input
                       type="text"
-                      placeholder="Filter Employers by name or email"
+                      placeholder="Filter Customers by name or email"
                       value={filter}
                       onChange={handleFilterChange}
                       className="me-2"
@@ -160,42 +160,40 @@ const Employer = () => {
                     <th scope="col">Telephone</th>
                     <th scope="col">Birth Date</th>
                     <th scope="col">Address</th>
-                    <th scope="col">Company Name</th>
                     <th scope="col">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan="11" className="text-center">Loading...</td>
+                      <td colSpan="10" className="text-center">Loading...</td>
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan="11" className="text-danger text-center">{error}</td>
+                      <td colSpan="10" className="text-danger text-center">{error}</td>
                     </tr>
-                  ) : currentEmployers.length === 0 ? (
+                  ) : currentCustomers.length === 0 ? (
                     <tr>
-                      <td colSpan="11" className="text-center">No employers found.</td>
+                      <td colSpan="10" className="text-center">No customers found.</td>
                     </tr>
-                  ) : isAdmin ? (
-                    currentEmployers.map((employer, index) => (
+                  ) : (
+                    currentCustomers.map((customer, index) => (
                       <tr key={index}>
-                        <th scope="row">{indexOfFirstEmployers + index + 1}</th>
-                        <td>{employer.firstName}</td>
-                        <td>{employer.lastName}</td>
-                        <td>{employer.email}</td>
+                        <th scope="row">{indexOfFirstCustomer + index + 1}</th>
+                        <td>{customer.firstName}</td>
+                        <td>{customer.lastName}</td>
+                        <td>{customer.email}</td>
                         <td>
                           <img
-                            src={`data:image/jpeg;base64,${employer.avatar}`}
+                            src={`data:image/jpeg;base64,${customer.avatar}`}
                             alt="avatar"
                             style={{ width: '50px', height: '50px', borderRadius: '50%' }}
                           />
                         </td>
-                        <td>{employer.gender}</td>
-                        <td>{employer.telephone}</td>
-                        <td>{employer.birthDate ? format(new Date(employer.birthDate), 'dd/MM/yyyy') : 'N/A'}</td>
-                        <td>{employer.addressName}</td>
-                        <td>{employer.companyName}</td>
+                        <td>{customer.gender}</td>
+                        <td>{customer.telephone}</td>
+                        <td>{customer.birthDate ? format(new Date(customer.birthDate), 'dd/MM/yyyy') : 'N/A'}</td>
+                        <td>{customer.addressName}</td>
                         <td>
                           <UncontrolledDropdown>
                             <DropdownToggle className="btn-icon-only text-light" size="sm">
@@ -203,16 +201,12 @@ const Employer = () => {
                             </DropdownToggle>
                             <DropdownMenu className="dropdown-menu-arrow" right>
                               <DropdownItem>Edit</DropdownItem>
-                              <DropdownItem onClick={() => handleDelete(employer.email)}>Delete</DropdownItem>
+                              <DropdownItem onClick={() => handleDelete(customer.email)}>Delete</DropdownItem>
                             </DropdownMenu>
                           </UncontrolledDropdown>
                         </td>
                       </tr>
                     ))
-                  ) : (
-                    <tr>
-                      <td colSpan="11" className="text-center">You do not have permission to view this content.</td>
-                    </tr>
                   )}
                 </tbody>
               </Table>
@@ -222,23 +216,17 @@ const Employer = () => {
                   <nav aria-label="...">
                     <Pagination className="pagination justify-content-end mb-0">
                       <PaginationItem disabled={currentPage === 1}>
-                        <PaginationLink
-                          onClick={() => paginate(currentPage - 1)}
-                          previous
-                        />
+                        <PaginationLink onClick={() => paginate(currentPage - 1)} previous />
                       </PaginationItem>
-                      {[...Array(Math.ceil(filteredEmployers.length / employersPerPage))].map((_, i) => (
+                      {Array.from({ length: Math.ceil(filteredCustomers.length / customersPerPage) }, (_, i) => (
                         <PaginationItem key={i} active={i + 1 === currentPage}>
                           <PaginationLink onClick={() => paginate(i + 1)}>
                             {i + 1}
                           </PaginationLink>
                         </PaginationItem>
                       ))}
-                      <PaginationItem disabled={currentPage === Math.ceil(filteredEmployers.length / employersPerPage)}>
-                        <PaginationLink
-                          onClick={() => paginate(currentPage + 1)}
-                          next
-                        />
+                      <PaginationItem disabled={currentPage === Math.ceil(filteredCustomers.length / customersPerPage)}>
+                        <PaginationLink onClick={() => paginate(currentPage + 1)} next />
                       </PaginationItem>
                     </Pagination>
                   </nav>
@@ -254,4 +242,4 @@ const Employer = () => {
   );
 };
 
-export default Employer;
+export default Customer;

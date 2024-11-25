@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import Header from "components/Headers/Header.js";
 import { getAllCategories, checkRoleAdmin, deleteCategory } from "components/utils/ApiFunctions";
+import { Modal, notification } from "antd"; 
 
 const Category = () => {
   const [categories, setCategories] = useState([]);
@@ -30,8 +31,7 @@ const Category = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const categoriesPerPage = 5;
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-
+  const [categoryToDelete, setCategoryToDelete] = useState(null); 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -92,11 +92,24 @@ const Category = () => {
     }
   };
 
+  const showDeleteConfirm = (category) => {
+    Modal.confirm({
+      title: `Are you sure you want to delete category "${category.categoryName}"?`,
+      onOk: () => handleDelete(category.id),
+      onCancel: () => setCategoryToDelete(null), 
+    });
+  };
+
   const handleDelete = async (categoryId) => {
     try {
       const result = await deleteCategory(categoryId);
       if (result === "") {
-        setSuccessMessage(`Category No ${categoryId} was deleted.`);
+        notification.success({
+          message: 'Category Deleted',
+          description: `Category No ${categoryId} was deleted successfully.`,
+          placement: 'topRight',
+        });
+
         const updatedCategories = await getAllCategories();
         setCategories(updatedCategories);
         setFilteredCategories(updatedCategories);
@@ -108,7 +121,6 @@ const Category = () => {
       setErrorMessage(error.message);
     }
     setTimeout(() => {
-      setSuccessMessage("");
       setErrorMessage("");
     }, 3000);
   };
@@ -188,7 +200,7 @@ const Category = () => {
                               <i className="fas fa-ellipsis-v" />
                             </DropdownToggle>
                             <DropdownMenu className="dropdown-menu-arrow" right>
-                              <DropdownItem onClick={() => handleDelete(category.id)}>Delete</DropdownItem>
+                              <DropdownItem onClick={() => showDeleteConfirm(category)}>Delete</DropdownItem>
                               <DropdownItem onClick={() => navigate(`/admin/update-category/${category.id}`, { state: category })}>
                                 Edit
                               </DropdownItem>
@@ -232,7 +244,6 @@ const Category = () => {
                 </CardFooter>
               )}
             </Card>
-            {successMessage && <div className="alert alert-success">{successMessage}</div>}
             {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
           </div>
         </Row>

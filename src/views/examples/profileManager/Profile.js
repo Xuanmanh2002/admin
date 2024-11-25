@@ -25,10 +25,10 @@ const Profile = () => {
     avatar: "",
     gender: "",
     telephone: "",
-    addressId: "", // Keep addressId in the state
+    addressId: "", 
   });
-  const [addressName, setAddressName] = useState(""); // State to hold the selected address name
-  const [addresses, setAddresses] = useState([]); // State to hold all addresses
+  const [addressName, setAddressName] = useState(""); 
+  const [addresses, setAddresses] = useState([]); 
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const email = localStorage.getItem("email");
@@ -39,12 +39,8 @@ const Profile = () => {
       try {
         const adminData = await getAdmin(email, token);
         setAdmin(adminData);
-
-        // Fetch all addresses
         const allAddresses = await getAllAddress();
         setAddresses(allAddresses);
-
-        // If addressId is available, find the corresponding address name
         if (adminData.addressId) {
           const address = allAddresses.find(addr => addr.id === adminData.addressId);
           setAddressName(address ? address.name : "Unknown");
@@ -262,16 +258,21 @@ const Profile = () => {
                       <Col lg="6">
                         <FormGroup>
                           <label className="form-control-label" htmlFor="input-gender">
-                            Gender
+                            Giới tính
                           </label>
                           <Input
-                            className="form-control-alternative"
+                            type="select"
                             name="gender"
+                            id="input-gender"
+                            className="form-control-alternative"
                             value={admin.gender}
                             onChange={handleInputChange}
-                            id="input-gender"
-                            type="text"
-                          />
+                          >
+                            <option value="">Gender selection</option>
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                            <option value="Other">Other</option>
+                          </Input>
                         </FormGroup>
                       </Col>
                     </Row>

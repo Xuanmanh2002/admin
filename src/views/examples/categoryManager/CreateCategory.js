@@ -13,6 +13,7 @@ import {
 } from "reactstrap";
 import Header from "components/Headers/Header.js";
 import { createCategory, checkRoleAdmin } from "components/utils/ApiFunctions"; 
+import { notification } from 'antd'; 
 
 const CreateCategory = () => {
     const [newCategory, setNewCategory] = useState({
@@ -20,7 +21,6 @@ const CreateCategory = () => {
         description: "",
     });
     const [errorMessage, setErrorMessage] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
     const [isAdmin, setIsAdmin] = useState(false); 
 
     useEffect(() => {
@@ -41,7 +41,6 @@ const CreateCategory = () => {
 
     const handleCategoryInputChange = (e) => {
         const { name, value } = e.target;
-        console.log("Updating field:", name, "with value:", value);  
         setNewCategory({ ...newCategory, [name]: value });
     };
 
@@ -51,14 +50,17 @@ const CreateCategory = () => {
             setErrorMessage("You do not have permission to create categories.");
             return;
         }
-    
-        console.log("Submitting category:", newCategory); 
-    
+
         try {
             const response = await createCategory(newCategory.categoryName, newCategory.description);
             
             if (response.success) {
-                setSuccessMessage(response.message); 
+                notification.success({
+                    message: 'Category Created',
+                    description: response.message,
+                    placement: 'topRight',
+                });
+
                 setNewCategory({ categoryName: "", description: "" }); 
                 setErrorMessage("");
             } else {
@@ -66,9 +68,13 @@ const CreateCategory = () => {
             }
         } catch (error) {
             setErrorMessage(error.message);
+            notification.error({
+                message: 'Error',
+                description: error.message,
+                placement: 'topRight',
+            });
         }
     };
-    
 
     return (
         <>
@@ -83,7 +89,6 @@ const CreateCategory = () => {
                             <CardBody>
                                 <Form role="form" onSubmit={handleSubmit}>
                                     {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
-                                    {successMessage && <div className="alert alert-success">{successMessage}</div>}
                                     <FormGroup>
                                         <label htmlFor="categoryName">Category Name</label>
                                         <Input

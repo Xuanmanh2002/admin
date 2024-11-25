@@ -48,9 +48,7 @@ const Service = () => {
           });
           return;
         }
-
         const isAdminRole = await checkRoleAdmin(token);
-
         if (isAdminRole) {
           setIsAdmin(true);
           const data = await getAllService();
