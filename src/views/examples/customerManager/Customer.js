@@ -1,24 +1,10 @@
 import React, { useEffect, useState } from "react";
-import {
-  Card,
-  CardHeader,
-  CardFooter,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  Pagination,
-  PaginationItem,
-  PaginationLink,
-  Table,
-  Container,
-  Row,
-  Input,
-} from "reactstrap";
+import { Card, CardHeader, CardFooter, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Pagination, PaginationItem, PaginationLink, Table, Container, Row, Input } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import Header from "components/Headers/Header.js";
 import { getAllCustomer, checkRoleAdmin, deleteCustomer, getAllAddress } from "components/utils/ApiFunctions";
 import { format } from "date-fns";
+import { notification } from 'antd';  // Import notification from Ant Design
 
 const Customer = () => {
   const [customers, setCustomers] = useState([]);
@@ -30,9 +16,7 @@ const Customer = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const customersPerPage = 5;
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -110,20 +94,29 @@ const Customer = () => {
     try {
       const result = await deleteCustomer(email);
       if (!result) {
-        setSuccessMessage(`Customer with email ${email} was deleted successfully.`);
+        // Display success notification using antd notification
+        notification.success({
+          message: 'Success',
+          description: `Customer with email ${email} was deleted successfully.`,
+        });
+
         const updatedCustomers = await getAllCustomer();
         setCustomers(updatedCustomers);
         setFilteredCustomers(updatedCustomers);
       } else {
-        setErrorMessage(`Error deleting customer: ${result.message}`);
+        // Display error notification
+        notification.error({
+          message: 'Error',
+          description: `Error deleting customer: ${result.message}`,
+        });
       }
     } catch (error) {
-      setErrorMessage(error.message);
+      // Display error notification
+      notification.error({
+        message: 'Error',
+        description: error.message,
+      });
     }
-    setTimeout(() => {
-      setSuccessMessage("");
-      setErrorMessage("");
-    }, 3000);
   };
 
   return (
@@ -233,8 +226,6 @@ const Customer = () => {
                 </CardFooter>
               )}
             </Card>
-            {successMessage && <div className="alert alert-success">{successMessage}</div>}
-            {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
           </div>
         </Row>
       </Container>

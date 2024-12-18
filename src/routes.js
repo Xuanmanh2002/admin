@@ -3,7 +3,7 @@ import Profile from "views/examples/profileManager/Profile";
 import Register from "views/examples/Register.js";
 import Login from "views/examples/Login.js";
 import Roles from "views/examples/rolesManager/Roles";
-import Icons from "views/examples/Icons.js";
+// import Icons from "views/examples/Icons.js";
 import Service from "views/examples/servicePackManager /Service";
 import CreateService from "views/examples/servicePackManager /CreateService";
 import UpdateService from "views/examples/servicePackManager /UpdateService";
@@ -25,13 +25,13 @@ var routes = [
     component: <Index />,
     layout: "/admin",
   },
-  {
-    path: "/icons",
-    name: "Icons",
-    icon: "ni ni-planet text-blue",
-    component: <Icons />,
-    layout: "/admin",
-  },
+  // {
+  //   path: "/icons",
+  //   name: "Icons",
+  //   icon: "ni ni-planet text-blue",
+  //   component: <Icons />,
+  //   layout: "/admin",
+  // },
   {
     path: "/category",
     name: "Manager Category",

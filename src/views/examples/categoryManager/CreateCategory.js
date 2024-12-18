@@ -10,18 +10,21 @@ import {
     FormGroup,
     Input,
     Button,
+    Label,
 } from "reactstrap";
 import Header from "components/Headers/Header.js";
-import { createCategory, checkRoleAdmin } from "components/utils/ApiFunctions"; 
-import { notification } from 'antd'; 
+import { createCategory, checkRoleAdmin } from "components/utils/ApiFunctions";
+import { notification } from 'antd';
 
 const CreateCategory = () => {
     const [newCategory, setNewCategory] = useState({
         categoryName: "",
         description: "",
+        images: null, 
     });
     const [errorMessage, setErrorMessage] = useState("");
-    const [isAdmin, setIsAdmin] = useState(false); 
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [previewImage, setPreviewImage] = useState("");
 
     useEffect(() => {
         const checkAdminRole = async () => {
@@ -44,24 +47,39 @@ const CreateCategory = () => {
         setNewCategory({ ...newCategory, [name]: value });
     };
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setNewCategory({ ...newCategory, images: file });
+            const reader = new FileReader();
+            reader.onload = () => setPreviewImage(reader.result);
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!isAdmin) {
             setErrorMessage("You do not have permission to create categories.");
             return;
         }
-
+    
         try {
-            const response = await createCategory(newCategory.categoryName, newCategory.description);
-            
+            const response = await createCategory(
+                newCategory.categoryName,
+                newCategory.description,
+                newCategory.images
+            );
+    
             if (response.success) {
                 notification.success({
                     message: 'Category Created',
                     description: response.message,
                     placement: 'topRight',
                 });
-
-                setNewCategory({ categoryName: "", description: "" }); 
+    
+                setNewCategory({ categoryName: "", description: "", images: null });
+                setPreviewImage("");
                 setErrorMessage("");
             } else {
                 setErrorMessage(response.message);
@@ -90,7 +108,7 @@ const CreateCategory = () => {
                                 <Form role="form" onSubmit={handleSubmit}>
                                     {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
                                     <FormGroup>
-                                        <label htmlFor="categoryName">Category Name</label>
+                                        <Label htmlFor="categoryName">Category Name</Label>
                                         <Input
                                             type="text"
                                             id="categoryName"
@@ -102,7 +120,7 @@ const CreateCategory = () => {
                                         />
                                     </FormGroup>
                                     <FormGroup>
-                                        <label htmlFor="description">Description</label>
+                                        <Label htmlFor="description">Description</Label>
                                         <Input
                                             type="text"
                                             id="description"
@@ -111,6 +129,44 @@ const CreateCategory = () => {
                                             value={newCategory.description}
                                             onChange={handleCategoryInputChange}
                                             required
+                                        />
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <Label htmlFor="images">Upload Image</Label>
+                                        <div
+                                            onClick={() => document.getElementById("images").click()}
+                                            style={{
+                                                cursor: "pointer",
+                                                width: "150px",
+                                                height: "150px",
+                                                border: "2px dashed #ccc",
+                                                borderRadius: "8px",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                overflow: "hidden",
+                                                backgroundColor: "#f9f9f9",
+                                            }}
+                                        >
+                                            {previewImage ? (
+                                                <img
+                                                    src={previewImage}
+                                                    alt="Preview"
+                                                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                                />
+                                            ) : (
+                                                <span style={{ color: "#aaa", fontSize: "14px" }}>
+                                                    Click to upload
+                                                </span>
+                                            )}
+                                        </div>
+                                        <Input
+                                            type="file"
+                                            id="images"
+                                            name="images"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                            style={{ display: "none" }} 
                                         />
                                     </FormGroup>
                                     <Button type="submit" color="primary" disabled={!isAdmin}>

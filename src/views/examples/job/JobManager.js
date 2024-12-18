@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   Card,
   CardHeader,
-  CardFooter,
   UncontrolledDropdown,
   DropdownToggle,
   DropdownMenu,
@@ -19,11 +18,12 @@ import {
   ModalBody,
   ModalFooter,
   Alert,
+  Button,
 } from "reactstrap";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import Header from "components/Headers/Header.js";
-import { getAllJob, deleteJob, getAllCategories } from "components/utils/ApiFunctions";
+import { getAllJob, deleteJob, getAllCategories, updateJobStatus } from "components/utils/ApiFunctions";
 
 const JobManager = () => {
   const [jobs, setJobs] = useState([]);
@@ -33,10 +33,12 @@ const JobManager = () => {
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [jobsPerPage, setJobsPerPage] = useState(5);
   const [modal, setModal] = useState(false);
   const [jobToDelete, setJobToDelete] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
-  const jobsPerPage = 5;
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,7 +69,16 @@ const JobManager = () => {
     fetchData();
   }, []);
 
-  const navigate = useNavigate();
+  const handleUpdateJobStatus = async (jobId, status) => {
+    try {
+      const updatedJob = await updateJobStatus(jobId, status);
+      setJobs(jobs.map((job) => (job.id === jobId ? updatedJob : job)));
+      setFilteredJobs(filteredJobs.map((job) => (job.id === jobId ? updatedJob : job)));
+      setSuccessMessage(`Job status updated successfully.`);
+    } catch (error) {
+      setError("Failed to update job status.");
+    }
+  };
 
   const handleFilterChange = (e) => {
     const searchTerm = e.target.value.toLowerCase();
@@ -82,6 +93,12 @@ const JobManager = () => {
       : jobs;
 
     setFilteredJobs(filtered);
+  };
+
+
+  const handleJobsPerPageChange = (e) => {
+    setJobsPerPage(parseInt(e.target.value, 10));
+    setCurrentPage(1);
   };
 
   const indexOfLastJob = currentPage * jobsPerPage;
@@ -147,6 +164,7 @@ const JobManager = () => {
                     <th scope="col">Job details</th>
                     <th scope="col">Job Category</th>
                     <th scope="col">Date of creation</th>
+                    <th scope="col">Expiration Date</th>
                     <th scope="col">Active</th>
                     <th scope="col">Employer</th>
                     <th scope="col">Action</th>
@@ -176,6 +194,16 @@ const JobManager = () => {
                         <td>{job.categoryName || "N/A"}</td>
                         <td>{job.createAt ? format(new Date(job.createAt), "dd/MM/yyyy") : "N/A"}</td>
                         <td>
+                          {job.activationDate && job.totalValidityPeriod
+                            ? format(
+                              new Date(job.activationDate).setDate(
+                                new Date(job.activationDate).getDate() + job.totalValidityPeriod
+                              ),
+                              "dd/MM/yyyy"
+                            )
+                            : "N/A"}
+                        </td>
+                        <td>
                           <span className={job.status ? "text-success" : "text-danger"}>
                             {job.status ? "Active" : "Inactive"}
                           </span>
@@ -188,8 +216,8 @@ const JobManager = () => {
                             </DropdownToggle>
                             <DropdownMenu className="dropdown-menu-arrow" right>
                               <DropdownItem onClick={() => openModal(job.id)}>Delete</DropdownItem>
-                              <DropdownItem onClick={() => navigate(`/employer/update-job/${job.id}`, { state: job })}>
-                                Edit
+                              <DropdownItem onClick={() => handleUpdateJobStatus(job.id, job.status ? false : true)}>
+                                {job.status ? "Deactivate" : "Activate"}
                               </DropdownItem>
                             </DropdownMenu>
                           </UncontrolledDropdown>
@@ -199,39 +227,55 @@ const JobManager = () => {
                   )}
                 </tbody>
               </Table>
-              <CardFooter className="py-4">
-                <nav aria-label="...">
-                  <Pagination className="pagination justify-content-end mb-0">
-                    <PaginationItem disabled={currentPage === 1}>
-                      <PaginationLink onClick={() => paginate(currentPage - 1)} previous />
+              <Pagination className="pagination justify-content-end mb-0">
+                <PaginationItem disabled={currentPage === 1}>
+                  <PaginationLink
+                    previous
+                    onClick={() => paginate(currentPage - 1)}
+                  />
+                </PaginationItem>
+                {[...Array(Math.ceil(filteredJobs.length / jobsPerPage))].map(
+                  (_, i) => (
+                    <PaginationItem
+                      key={i}
+                      active={i + 1 === currentPage}
+                    >
+                      <PaginationLink onClick={() => paginate(i + 1)}>
+                        {i + 1}
+                      </PaginationLink>
                     </PaginationItem>
-                    {[...Array(Math.ceil(filteredJobs.length / jobsPerPage))].map((_, i) => (
-                      <PaginationItem key={i} active={i + 1 === currentPage}>
-                        <PaginationLink onClick={() => paginate(i + 1)}>
-                          {i + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
-                    <PaginationItem disabled={currentPage === Math.ceil(filteredJobs.length / jobsPerPage)}>
-                      <PaginationLink onClick={() => paginate(currentPage + 1)} next />
-                    </PaginationItem>
-                  </Pagination>
-                </nav>
-              </CardFooter>
+                  )
+                )}
+                <PaginationItem
+                  disabled={
+                    currentPage === Math.ceil(filteredJobs.length / jobsPerPage)
+                  }
+                >
+                  <PaginationLink
+                    next
+                    onClick={() => paginate(currentPage + 1)}
+                  />
+                </PaginationItem>
+              </Pagination>
             </Card>
           </div>
         </Row>
-        <Modal isOpen={modal} toggle={() => setModal(!modal)}>
-          <ModalHeader toggle={() => setModal(!modal)}>Confirm Delete</ModalHeader>
-          <ModalBody>
-            Are you sure you want to delete this job?
-          </ModalBody>
-          <ModalFooter>
-            <button className="btn btn-secondary" onClick={() => setModal(false)}>Cancel</button>
-            <button className="btn btn-danger" onClick={handleConfirmDelete}>Delete</button>
-          </ModalFooter>
-        </Modal>
       </Container>
+
+      <Modal isOpen={modal} toggle={() => setModal(false)}>
+        <ModalHeader toggle={() => setModal(false)}>Confirm Deletion</ModalHeader>
+        <ModalBody>
+          Are you sure you want to delete this job?
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={() => setModal(false)}>
+            Cancel
+          </Button>
+          <Button color="danger" onClick={handleConfirmDelete}>
+            Confirm Delete
+          </Button>
+        </ModalFooter>
+      </Modal>
     </>
   );
 };

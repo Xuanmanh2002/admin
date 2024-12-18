@@ -161,6 +161,7 @@ const Employer = () => {
                     <th scope="col">Birth Date</th>
                     <th scope="col">Address</th>
                     <th scope="col">Company Name</th>
+                    <th scope="col">Ranker</th>
                     <th scope="col">Actions</th>
                   </tr>
                 </thead>
@@ -196,6 +197,7 @@ const Employer = () => {
                         <td>{employer.birthDate ? format(new Date(employer.birthDate), 'dd/MM/yyyy') : 'N/A'}</td>
                         <td>{employer.addressName}</td>
                         <td>{employer.companyName}</td>
+                        <td>{employer.rank}</td>
                         <td>
                           <UncontrolledDropdown>
                             <DropdownToggle className="btn-icon-only text-light" size="sm">

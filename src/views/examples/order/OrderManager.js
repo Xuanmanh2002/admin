@@ -14,8 +14,9 @@ import {
 } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import Header from "components/Headers/Header.js";
-import { getAllOrder, deleteOrder } from "components/utils/ApiFunctions";
+import { getAllOrder, deleteOrder, updateOrderStatus } from "components/utils/ApiFunctions";
 import { notification } from 'antd';
+import { FaTrash } from "react-icons/fa";
 
 const Order = () => {
   const navigate = useNavigate();
@@ -59,6 +60,33 @@ const Order = () => {
     setFilteredOrders(filtered);
   };
 
+  const updateOrderStatusHandler = async (id, newStatus) => {
+    try {
+      const response = await updateOrderStatus(id, newStatus);
+      if (response.success) {
+        const updatedOrders = orders.map(order =>
+          order.id === id ? { ...order, orderStatus: newStatus } : order
+        );
+        setOrders(updatedOrders);
+        setFilteredOrders(updatedOrders);
+        notification.success({
+          message: 'Order Status Updated',
+          description: 'The order status has been successfully updated.',
+          placement: 'topRight',
+        });
+      } else {
+        setError(response.message);
+      }
+    } catch (err) {
+      setError("Failed to update order status.");
+      notification.error({
+        message: 'Error',
+        description: 'Failed to update order status.',
+        placement: 'topRight',
+      });
+    }
+  };
+
   const deleteOrderHandler = async (id) => {
     if (window.confirm("Are you sure you want to delete this order?")) {
       try {
@@ -91,6 +119,16 @@ const Order = () => {
   const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const getStatusButtonClass = (status) => {
+    switch (status) {
+      case 'Chưa giải quyết':
+        return 'btn-warning';
+      case 'Thanh toán thành công':
+        return 'btn-success';
+      default:
+        return 'btn-secondary';
+    }
+  };
 
   return (
     <>
@@ -121,6 +159,7 @@ const Order = () => {
                     <th scope="col">Company Name</th>
                     <th scope="col">Validity Period</th>
                     <th scope="col">Order Date</th>
+                    <th scope="col">Order Status</th>
                     <th scope="col">Total Amounts</th>
                     <th scope="col">Action</th>
                   </tr>
@@ -128,7 +167,7 @@ const Order = () => {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan="6" className="text-center">
+                      <td colSpan="8" className="text-center">
                         <div className="spinner-border" role="status">
                           <span className="visually-hidden">Loading...</span>
                         </div>
@@ -136,7 +175,7 @@ const Order = () => {
                     </tr>
                   ) : currentOrders.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="text-center">
+                      <td colSpan="8" className="text-center">
                         No orders found.
                       </td>
                     </tr>
@@ -151,22 +190,31 @@ const Order = () => {
                           <td>{order.totalValidityPeriod} ngày</td>
                           <td>{new Date(order.orderDate).toLocaleDateString()}</td>
                           <td>
+                            <button
+                              className={`btn btn-sm ${getStatusButtonClass(order.orderStatus)}`}
+                              onClick={() => updateOrderStatusHandler(order.id, order.orderStatus === "Chờ thanh toán" ? "Thanh toán thành công" : "Chờ thanh toán")}
+                            >
+                              {order.orderStatus}
+                            </button>
+                          </td>
+                          <td>
                             {order.totalAmounts
                               ? `${order.totalAmounts.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}`
                               : "N/A"}
                           </td>
-                          <td>
+                          <td style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            <FaTrash
+                              onClick={() => deleteOrderHandler(order.id)}
+                              className="text-danger cursor-pointer"
+                              size={20}
+                              title="Delete Order"
+                              style={{ cursor: "pointer" }}
+                            />
                             <button
-                              className="btn btn-primary btn-sm me-2"
+                              className="btn btn-primary btn-sm"
                               onClick={() => navigate(`/admin/view-order-details/${order.id}`)}
                             >
                               View Details
-                            </button>
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => deleteOrderHandler(order.id)}
-                            >
-                              Delete
                             </button>
                           </td>
                         </tr>

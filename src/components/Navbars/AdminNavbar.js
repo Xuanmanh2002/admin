@@ -11,9 +11,9 @@ import {
 } from "reactstrap";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "components/Auth/AuthProvider";
-import { checkRoleAdmin } from "components/utils/ApiFunctions";
+import { checkRoleAdmin, getNotificationsByRole } from "components/utils/ApiFunctions";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell } from '@fortawesome/free-solid-svg-icons'; 
+import { faBell } from '@fortawesome/free-solid-svg-icons';
 
 const AdminNavbar = (props) => {
   const { handleLogout } = useContext(AuthContext);
@@ -25,7 +25,7 @@ const AdminNavbar = (props) => {
     avatar: "",
     roles: [{ id: "", name: "" }],
   });
-
+  const [notifications, setNotifications] = useState([]); 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -40,6 +40,15 @@ const AdminNavbar = (props) => {
         lastName: storedLastName || "",
         avatar: storedAvatar || "",
       }));
+    };
+
+    const fetchNotifications = async () => {
+      try {
+        const data = await getNotificationsByRole();
+        setNotifications(data); 
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
     };
 
     if (!token) {
@@ -71,6 +80,7 @@ const AdminNavbar = (props) => {
     };
 
     verifyRole();
+    fetchNotifications(); 
   }, [navigate, handleLogout, token]);
 
   if (loading) {
@@ -103,14 +113,18 @@ const AdminNavbar = (props) => {
                 <DropdownItem className="noti-title" header tag="div">
                   <h6 className="text-overflow m-0">Notifications</h6>
                 </DropdownItem>
-                <DropdownItem>
-                  <i className="ni ni-bell-55" />
-                  <span>New message received</span>
-                </DropdownItem>
-                <DropdownItem>
-                  <i className="ni ni-bell-55" />
-                  <span>New task assigned</span>
-                </DropdownItem>
+                {notifications.length > 0 ? (
+                  notifications.map((notification, index) => (
+                    <DropdownItem key={index}>
+                      <i className="ni ni-bell-55" />
+                      <span>{notification.message}</span>
+                    </DropdownItem>
+                  ))
+                ) : (
+                  <DropdownItem className="text-center text-muted">
+                    No notifications
+                  </DropdownItem>
+                )}
                 <DropdownItem divider />
                 <DropdownItem className="text-center text-muted" disabled>
                   View all notifications

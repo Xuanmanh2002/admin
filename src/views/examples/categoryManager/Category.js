@@ -19,7 +19,7 @@ import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import Header from "components/Headers/Header.js";
 import { getAllCategories, checkRoleAdmin, deleteCategory } from "components/utils/ApiFunctions";
-import { Modal, notification } from "antd"; 
+import { Modal, notification } from "antd";
 
 const Category = () => {
   const [categories, setCategories] = useState([]);
@@ -31,7 +31,7 @@ const Category = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const categoriesPerPage = 5;
   const [errorMessage, setErrorMessage] = useState("");
-  const [categoryToDelete, setCategoryToDelete] = useState(null); 
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -96,7 +96,7 @@ const Category = () => {
     Modal.confirm({
       title: `Are you sure you want to delete category "${category.categoryName}"?`,
       onOk: () => handleDelete(category.id),
-      onCancel: () => setCategoryToDelete(null), 
+      onCancel: () => setCategoryToDelete(null),
     });
   };
 
@@ -167,6 +167,7 @@ const Category = () => {
                   <tr>
                     <th scope="col">ID</th>
                     <th scope="col">Name</th>
+                    <th scopte="col">Images</th>
                     <th scope="col">Description</th>
                     <th scope="col">Created Date</th>
                     <th scope="col">Actions</th>
@@ -192,6 +193,13 @@ const Category = () => {
                           {indexOfFirstCategory + index + 1}
                         </th>
                         <td>{category.categoryName}</td>
+                        <td>
+                          <img
+                            src={`data:image/jpeg;base64,${category.images}`}
+                            alt="avatar"
+                            style={{ width: '50px', height: '50px', borderRadius: '50%' }}
+                          />
+                        </td>
                         <td>{category.description}</td>
                         <td>{category.createAt ? format(new Date(category.createAt), "dd/MM/yyyy") : "N/A"}</td>
                         <td>

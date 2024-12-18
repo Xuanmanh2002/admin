@@ -19,7 +19,6 @@ const CreateService = () => {
     const [newService, setNewService] = useState({
         serviceName: "",
         price: "",
-        quantity: "",
         validityPeriod: "",
         description: "",
     });
@@ -59,7 +58,6 @@ const CreateService = () => {
             const response = await createService(
                 newService.serviceName,
                 newService.price,
-                newService.quantity,
                 newService.validityPeriod,
                 newService.description
             );
@@ -69,7 +67,6 @@ const CreateService = () => {
                 setNewService({
                     serviceName: "",
                     price: "",
-                    quantity: "",
                     validityPeriod: "",
                     description: "",
                 });
@@ -116,18 +113,6 @@ const CreateService = () => {
                                             name="price"
                                             placeholder="Enter price"
                                             value={newService.price}
-                                            onChange={handleServiceInputChange}
-                                            required
-                                        />
-                                    </FormGroup>
-                                    <FormGroup>
-                                        <label htmlFor="quantity">Quantity</label>
-                                        <Input
-                                            type="number"
-                                            id="quantity"
-                                            name="quantity"
-                                            placeholder="Enter quantity"
-                                            value={newService.quantity}
                                             onChange={handleServiceInputChange}
                                             required
                                         />

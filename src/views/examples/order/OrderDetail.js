@@ -17,6 +17,7 @@ import Header from "components/Headers/Header.js";
 import { getOrderDetails, getAllService } from "components/utils/ApiFunctions";
 import { notification } from 'antd';
 import { FaTrash } from "react-icons/fa";
+import { format } from "date-fns";
 
 const OrderDetail = () => {
     const { id } = useParams();
@@ -34,7 +35,7 @@ const OrderDetail = () => {
             setLoading(true);
             try {
                 const details = await getOrderDetails(id);
-                const serviceList = await getAllService(); // Renaming service to serviceList to avoid conflicts
+                const serviceList = await getAllService();
                 setOrderDetail(details);
                 setServices(serviceList);
                 setFilteredOrderDetail(details);
@@ -76,8 +77,6 @@ const OrderDetail = () => {
     const currentOrders = filteredOrderDetail.slice(indexOfFirstOrderDetail, indexOfLastOrderDetail);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-    // Function to get service name by serviceId
     const getServiceNameById = (serviceId) => {
         const service = services.find(service => service.id === serviceId);
         return service ? service.serviceName : "Unknown";
@@ -113,6 +112,7 @@ const OrderDetail = () => {
                                         <th scope="col">Price</th>
                                         <th scope="col">Amounts</th>
                                         <th scope="col">Validity Period</th>
+                                        <th scope="col">Activation Date</th>
                                         <th scope="col">Action</th>
                                     </tr>
                                 </thead>
@@ -136,22 +136,31 @@ const OrderDetail = () => {
                                             .sort((a, b) => new Date(a.orderDate) - new Date(b.orderDate))
                                             .map((order, index) => (
                                                 <tr key={order.id}>
-                                                    <th scope="row">{index + 1}</th> 
-                                                    <td>{getServiceNameById(order.serviceId)}</td> 
+                                                    <th scope="row">{index + 1}</th>
+                                                    <td>{getServiceNameById(order.serviceId)}</td>
                                                     <td>{order.quantity}</td>
-                                                    <td>{order.price}</td>
+                                                    <td>
+                                                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.price)}
+                                                    </td>
                                                     <td>
                                                         {order.totalAmounts
                                                             ? `${order.totalAmounts.toLocaleString("vi-VN", { style: "currency", currency: "VND" })}`
                                                             : "N/A"}
                                                     </td>
                                                     <td>{order.totalValidityPeriod}</td>
+                                                    <td> {order.activationDate && order.totalValidityPeriod
+                                                        ? format(
+                                                            new Date(order.activationDate).setDate(
+                                                                new Date(order.activationDate).getDate() + order.totalValidityPeriod
+                                                            ),
+                                                            "dd/MM/yyyy"
+                                                        )
+                                                        : "N/A"}</td>
                                                     <td>
                                                         <FaTrash
                                                             className="text-danger cursor-pointer"
                                                             size={20}
                                                             onClick={() => {
-                                                                // Add deletion logic here
                                                             }}
                                                         />
                                                     </td>

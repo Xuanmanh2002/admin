@@ -12,7 +12,6 @@ const UpdateService = () => {
     const [updatedService, setUpdatedService] = useState({
         serviceName: service.serviceName || "",
         price: service.price || "",
-        quantity: service.quantity || "",
         validityPeriod: service.validityPeriod || "",
         description: service.description || "",
     });
@@ -55,7 +54,6 @@ const UpdateService = () => {
                 id, 
                 updatedService.serviceName, 
                 updatedService.price,
-                updatedService.quantity, 
                 updatedService.validityPeriod, 
                 updatedService.description
             );
@@ -103,17 +101,6 @@ const UpdateService = () => {
                                             id="price"
                                             name="price"
                                             value={updatedService.price}
-                                            onChange={handleInputChange}
-                                            required
-                                        />
-                                    </FormGroup>
-                                    <FormGroup>
-                                        <label htmlFor="quantity">Quantity</label>
-                                        <Input
-                                            type="number"
-                                            id="quantity"
-                                            name="quantity"
-                                            value={updatedService.quantity}
                                             onChange={handleInputChange}
                                             required
                                         />

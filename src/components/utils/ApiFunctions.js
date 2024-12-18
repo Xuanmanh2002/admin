@@ -211,33 +211,39 @@ export async function getAllCategories() {
 	}
 }
 
-export async function createCategory(categoryName, description) {
-	const data = {
-		categoryName: categoryName,
-		description: description,
-	};
+export async function createCategory(categoryName, description, images) {
+    const formData = new FormData();
+    formData.append("categoryName", categoryName);
+    formData.append("description", description);
+    if (images) {
+        formData.append("images", images); 
+    }
 
-	try {
-		const response = await api.post("/admin/category/create", data, {
-			headers: getHeader(),
-		});
-		if (response.status === 200 && response.data.status === "success") {
-			return {
-				success: true,
-				message: response.data.message,
-			};
-		} else {
-			return {
-				success: false,
-				message: response.data.message || "Failed to create category",
-			};
-		}
-	} catch (error) {
-		return {
-			success: false,
-			message: error.response ? error.response.data.message : error.message,
-		};
-	}
+    try {
+        const response = await api.post("/admin/category/create", formData, {
+            headers: {
+                ...getHeader(), 
+                "Content-Type": "multipart/form-data",
+            },
+        });
+
+        if (response.status === 200) {
+            return {
+                success: true,
+                message: response.data.message,
+            };
+        } else {
+            return {
+                success: false,
+                message: response.data.message || "Failed to create category",
+            };
+        }
+    } catch (error) {
+        return {
+            success: false,
+            message: error.response ? error.response.data.message : error.message,
+        };
+    }
 }
 
 export async function deleteCategory(categoryId) {
@@ -251,20 +257,18 @@ export async function deleteCategory(categoryId) {
 	}
 }
 
-export async function updateCategory(categoryId, categoryName, description) {
-	const data = {
-		categoryName: categoryName,
-		description: description,
-	};
-
-	try {
-		const response = await api.put(`/admin/category/update/${categoryId}`, data, {
-			headers: getHeader(),
-		});
-		return response.status === 200;
-	} catch (error) {
-		throw new Error(error.response?.data?.message || "Error updating category.");
-	}
+export async function updateCategory(categoryId, formData) {
+    try {
+        const response = await api.put(`/admin/category/update/${categoryId}`, formData, {
+            headers: {
+                ...getHeader(),
+                "Content-Type": "multipart/form-data", 
+            },
+        });
+        return response.status === 200;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || "Error updating category.");
+    }
 }
 
 export async function getAllService() {
@@ -282,11 +286,10 @@ export async function getAllService() {
 	}
 }
 
-export async function createService(serviceName, price, quantity, validityPeriod, description) {
+export async function createService(serviceName, price, validityPeriod, description) {
 	const data = {
 		serviceName: serviceName,
 		price: price,
-		quantity: quantity,
 		validityPeriod: validityPeriod,
 		description: description,
 	};
@@ -325,11 +328,10 @@ export async function deleteService(serviceId) {
 	}
 }
 
-export async function updateService(servicePackId, serviceName, price, quantity, validityPeriod, description) {
+export async function updateService(servicePackId, serviceName, price, validityPeriod, description) {
 	const data = {
 		serviceName: serviceName,
 		price: price,
-		quantity: quantity,
 		validityPeriod: validityPeriod,
 		description: description
 	};
@@ -415,7 +417,7 @@ export async function getAllJob() {
 		if (!token || !adminId) {
 			throw new Error("User is not authenticated or adminId is not found.");
 		}
-		const result = await api.get("/employer/job/all", {
+		const result = await api.get("/employer/job/all-job-with-range", {
 			headers: {
 				Authorization: `Bearer ${token}`,
 				"Content-Type": "application/json"
@@ -518,5 +520,129 @@ export async function getOrderDetails(orderId) {
 	} catch (error) {
 		console.error("Error fetching order details:", error);
 		throw new Error(`Error fetching order details: ${error.message}`);
+	}
+}
+
+export async function updateJobStatus(jobId, status) {
+	try {
+		const response = await api.put(`/employer/job/update-status/${jobId}`, null, {
+			params: { status: status },
+			headers: getHeader()
+		});
+
+		if (response.status >= 200 && response.status < 300) {
+			return response.data;
+		} else {
+			throw new Error(`Update failed with status: ${response.status}`);
+		}
+	} catch (error) {
+		console.error("Error updating job status:", error);
+		throw new Error(error.response?.data?.message || "Error updating job status.");
+	}
+}
+
+export async function getTotalAmounts() {
+	try {
+		const response = await api.get("/api/order/total-amounts", {
+			headers: getHeader(),
+		});
+
+		if (response.status === 200) {
+			return response.data;
+		} else {
+			throw new Error(`Failed to fetch total amounts. Status: ${response.status}`);
+		}
+	} catch (error) {
+		console.error("Error fetching total amounts:", error);
+		throw new Error(error.response?.data?.message || "Error fetching total amounts.");
+	}
+}
+
+export async function getCountEmployers() {
+	try {
+		const response = await api.get("/admin/count-employers", {
+			headers: getHeader(),
+		});
+		if (response.status === 200) {
+			return response.data;
+		} else {
+			throw new Error(`Failed to fetch employer count with status: ${response.status}`);
+		}
+	} catch (error) {
+		console.error("Error fetching employer count:", error);
+		throw new Error(`Error fetching employer count: ${error.message}`);
+	}
+}
+
+export async function getCountCustomers() {
+	try {
+		const response = await api.get("/admin/count-customers", {
+			headers: getHeader(),
+		});
+		if (response.status === 200) {
+			return response.data;
+		} else {
+			throw new Error(`Failed to fetch customer count with status: ${response.status}`);
+		}
+	} catch (error) {
+		console.error("Error fetching customer count:", error);
+		throw new Error(`Error fetching customer count: ${error.message}`);
+	}
+}
+
+export async function getNotificationsByRole() {
+	try {
+		const response = await api.get("/api/notifications/by-role", {
+			headers: getHeader(),
+		});
+		if (response.status === 200) {
+			return response.data;
+		} else {
+			throw new Error(`Failed to fetch notifications, status: ${response.status}`);
+		}
+	} catch (error) {
+		console.error("Error fetching notifications:", error);
+		throw new Error(error.response?.data?.message || error.message);
+	}
+}
+
+export async function updateOrderStatus(orderId, orderStatus) {
+	try {
+		const response = await api.put(`/api/order/update-status/${orderId}`, null, {
+			params: { orderStatus: orderStatus },
+			headers: getHeader(),
+		});
+
+		if (response.status >= 200 && response.status < 300) {
+			return {
+				success: true,
+				data: response.data,
+			};
+		} else {
+			return {
+				success: false,
+				message: response.data || "Failed to update order status",
+			};
+		}
+	} catch (error) {
+		console.error("Error updating order status:", error);
+		return {
+			success: false,
+			message: error.response?.data?.message || error.message || "Error updating order status",
+		};
+	}
+}
+
+export async function getTotalAmountsByMonth() {
+	try {
+		const response = await api.get("/api/order/total-amounts-by-month", {
+			headers: getHeader(),
+		});
+		return response.data; 
+	} catch (error) {
+		console.error("Error fetching total amounts by month:", error);
+		throw new Error(
+			error.response?.data?.message || "Error fetching total amounts by month."
+		);
 	}
 }

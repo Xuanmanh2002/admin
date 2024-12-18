@@ -153,7 +153,6 @@ const Service = () => {
                     <th scope="col">ID</th>
                     <th scope="col">Service Name</th>
                     <th scope="col">Price</th>
-                    <th scope="col">Quantity</th>
                     <th scope="col">Validity Period</th>
                     <th scope="col">Description</th>
                     <th scope="col">Created Date</th>
@@ -179,7 +178,6 @@ const Service = () => {
                         <th scope="row">{service.id}</th>
                         <td>{service.serviceName}</td>
                         <td>{service.price}<span> VNĐ</span></td>
-                        <td>{service.quantity}</td>
                         <td>{service.validityPeriod}<span> ngày</span></td>
                         <td>{service.description}</td>
                         <td>{service.createAt ? format(new Date(service.createAt), "dd/MM/yyyy") : "N/A"}</td>

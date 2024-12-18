@@ -65,7 +65,6 @@ const Auth = (props) => {
             </svg>
           </div>
         </div>
-        {/* Page content */}
         <Container className="mt--8 pb-5">
           <Row className="justify-content-center">
             <Routes>
