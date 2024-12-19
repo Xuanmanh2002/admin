@@ -17,13 +17,12 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Alert,
   Button,
 } from "reactstrap";
 import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
 import Header from "components/Headers/Header.js";
 import { getAllJob, deleteJob, getAllCategories, updateJobStatus } from "components/utils/ApiFunctions";
+import { notification } from "antd";
 
 const JobManager = () => {
   const [jobs, setJobs] = useState([]);
@@ -36,9 +35,16 @@ const JobManager = () => {
   const [jobsPerPage, setJobsPerPage] = useState(5);
   const [modal, setModal] = useState(false);
   const [jobToDelete, setJobToDelete] = useState(null);
-  const [successMessage, setSuccessMessage] = useState("");
 
-  const navigate = useNavigate();
+
+  // Hàm mở thông báo
+  const openNotification = (type, message, description) => {
+    notification[type]({
+      message,
+      description,
+      placement: "topRight",
+    });
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,6 +67,7 @@ const JobManager = () => {
         setFilteredJobs(jobsWithCategoryName);
       } catch (err) {
         setError("Failed to load jobs.");
+        openNotification("error", "Error", "Failed to load jobs.");
       } finally {
         setLoading(false);
       }
@@ -73,10 +80,36 @@ const JobManager = () => {
     try {
       const updatedJob = await updateJobStatus(jobId, status);
       setJobs(jobs.map((job) => (job.id === jobId ? updatedJob : job)));
-      setFilteredJobs(filteredJobs.map((job) => (job.id === jobId ? updatedJob : job)));
-      setSuccessMessage(`Job status updated successfully.`);
+      setFilteredJobs(
+        filteredJobs.map((job) => (job.id === jobId ? updatedJob : job))
+      );
+      openNotification(
+        "success",
+        "Job Status Updated",
+        `The job status has been ${status ? "activated" : "deactivated"}.`
+      );
     } catch (error) {
       setError("Failed to update job status.");
+      openNotification("error", "Error", "Failed to update job status.");
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (jobToDelete) {
+      try {
+        await deleteJob(jobToDelete);
+        setJobs(jobs.filter((job) => job.id !== jobToDelete));
+        setFilteredJobs(
+          filteredJobs.filter((job) => job.id !== jobToDelete)
+        );
+        openNotification("success", "Job Deleted", "The job has been deleted successfully.");
+      } catch (error) {
+        setError("Failed to delete job.");
+        openNotification("error", "Error", "Failed to delete job.");
+      } finally {
+        setModal(false);
+        setJobToDelete(null);
+      }
     }
   };
 
@@ -86,19 +119,13 @@ const JobManager = () => {
 
     const filtered = searchTerm
       ? jobs.filter(
-        (job) =>
-          job.jobName?.toLowerCase().includes(searchTerm) ||
-          job.recruitmentDetails?.toLowerCase().includes(searchTerm)
-      )
+          (job) =>
+            job.jobName?.toLowerCase().includes(searchTerm) ||
+            job.recruitmentDetails?.toLowerCase().includes(searchTerm)
+        )
       : jobs;
 
     setFilteredJobs(filtered);
-  };
-
-
-  const handleJobsPerPageChange = (e) => {
-    setJobsPerPage(parseInt(e.target.value, 10));
-    setCurrentPage(1);
   };
 
   const indexOfLastJob = currentPage * jobsPerPage;
@@ -110,22 +137,6 @@ const JobManager = () => {
   const openModal = (jobId) => {
     setJobToDelete(jobId);
     setModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (jobToDelete) {
-      try {
-        await deleteJob(jobToDelete);
-        setJobs(jobs.filter((job) => job.id !== jobToDelete));
-        setFilteredJobs(filteredJobs.filter((job) => job.id !== jobToDelete));
-        setSuccessMessage("Job deleted successfully.");
-      } catch (error) {
-        setError("Failed to delete job.");
-      } finally {
-        setModal(false);
-        setJobToDelete(null);
-      }
-    }
   };
 
   return (
@@ -147,12 +158,6 @@ const JobManager = () => {
                   />
                 </div>
               </CardHeader>
-
-              {successMessage && (
-                <Alert color="success" toggle={() => setSuccessMessage("")}>
-                  {successMessage}
-                </Alert>
-              )}
 
               <Table className="align-items-center table-flush" responsive>
                 <thead className="thead-light">
@@ -181,7 +186,7 @@ const JobManager = () => {
                     </tr>
                   ) : currentJobs.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="text-center">No jobs found.</td>
+                      <td colSpan="15" className="text-center">No jobs found.</td>
                     </tr>
                   ) : (
                     currentJobs.map((job, index) => (
