@@ -16,6 +16,7 @@ import Customer from "views/examples/customerManager/Customer";
 import JobManager from "views/examples/job/JobManager";
 import Order from "views/examples/order/OrderManager";
 import OrderDetail from "views/examples/order/OrderDetail";
+import ReportManager from "views/examples/report/ReportManager";
 
 var routes = [
   {
@@ -44,13 +45,6 @@ var routes = [
     name: "Manager Service",
     icon: "ni ni-single-copy-04 text-green",
     component: <Service />,
-    layout: "/admin",
-  },
-  {
-    path: "/user-profile",
-    name: "User Profile",
-    icon: "ni ni-single-02 text-yellow",
-    component: <Profile />,
     layout: "/admin",
   },
   {
@@ -86,6 +80,13 @@ var routes = [
     name: "Manager Oder",
     icon: "ni ni-cart text-purple",
     component: <Order />,
+    layout: "/admin",
+  },
+  {
+    path: "/report",
+    name: "Manager Report",
+    icon: "ni ni-collection text-green",
+    component: <ReportManager />,
     layout: "/admin",
   },
   {
@@ -126,6 +127,11 @@ var routes = [
   {
     path: "/view-order-details/:id",
     component: <OrderDetail />,
+    layout: "/admin",
+  },
+  {
+    path: "/user-profile",
+    component: <Profile />,
     layout: "/admin",
   },
   

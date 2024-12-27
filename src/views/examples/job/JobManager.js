@@ -36,8 +36,6 @@ const JobManager = () => {
   const [modal, setModal] = useState(false);
   const [jobToDelete, setJobToDelete] = useState(null);
 
-
-  // Hàm mở thông báo
   const openNotification = (type, message, description) => {
     notification[type]({
       message,

@@ -13,6 +13,8 @@ const UpdateService = () => {
         serviceName: service.serviceName || "",
         price: service.price || "",
         validityPeriod: service.validityPeriod || "",
+        benefit: service.benefit || "",
+        displayPosition: service.displayPosition || "",
         description: service.description || "",
     });
     
@@ -55,6 +57,8 @@ const UpdateService = () => {
                 updatedService.serviceName, 
                 updatedService.price,
                 updatedService.validityPeriod, 
+                updatedService.benefit,
+                updatedService.displayPosition,
                 updatedService.description
             );
             if (success) {
@@ -112,6 +116,28 @@ const UpdateService = () => {
                                             id="validityPeriod"
                                             name="validityPeriod"
                                             value={updatedService.validityPeriod}
+                                            onChange={handleInputChange}
+                                            required
+                                        />
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <label htmlFor="validityPeriod">Benefit</label>
+                                        <Input
+                                            type="text"
+                                            id="benefit"
+                                            name="benefit"
+                                            value={updatedService.benefit}
+                                            onChange={handleInputChange}
+                                            required
+                                        />
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <label htmlFor="validityPeriod">Display Position</label>
+                                        <Input
+                                            type="text"
+                                            id="displayPosition"
+                                            name="displayPosition"
+                                            value={updatedService.displayPosition}
                                             onChange={handleInputChange}
                                             required
                                         />

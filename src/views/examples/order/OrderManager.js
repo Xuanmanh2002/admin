@@ -203,13 +203,13 @@ const Order = () => {
                               : "N/A"}
                           </td>
                           <td style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                            <FaTrash
+                            {/* <FaTrash
                               onClick={() => deleteOrderHandler(order.id)}
                               className="text-danger cursor-pointer"
                               size={20}
                               title="Delete Order"
                               style={{ cursor: "pointer" }}
-                            />
+                            /> */}
                             <button
                               className="btn btn-primary btn-sm"
                               onClick={() => navigate(`/admin/view-order-details/${order.id}`)}

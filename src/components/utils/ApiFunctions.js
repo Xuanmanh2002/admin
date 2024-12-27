@@ -286,35 +286,40 @@ export async function getAllService() {
 	}
 }
 
-export async function createService(serviceName, price, validityPeriod, description) {
-	const data = {
-		serviceName: serviceName,
-		price: price,
-		validityPeriod: validityPeriod,
-		description: description,
-	};
+export async function createService(serviceName, price, validityPeriod, benefit, displayPosition, description) {
+    const data = {
+        serviceName: serviceName,
+        price: price,
+        validityPeriod: validityPeriod,
+        benefit: benefit,
+        displayPosition: displayPosition,
+        description: description,
+    };
 
-	try {
-		const response = await api.post("/admin/service/create", data, {
-			headers: getHeader(),
-		});
-		if (response.status === 200 && response.data.status === "success") {
-			return {
-				success: true,
-				message: response.data.message,
-			};
-		} else {
-			return {
-				success: false,
-				message: response.data.message || "Failed to create service",
-			};
-		}
-	} catch (error) {
-		return {
-			success: false,
-			message: error.response ? error.response.data.message : error.message,
-		};
-	}
+    try {
+        const response = await api.post("/admin/service/create", data, {
+            headers: getHeader(),
+        });
+
+        if (response.status === 200 && response.data.status === "OK") { 
+            return {
+                success: true,
+                message: response.data.message,
+            };
+        } else {
+            return {
+                success: false,
+                message: response.data.error || "Failed to create service",
+            };
+        }
+    } catch (error) {
+        return {
+            success: false,
+            message: error.response
+                ? error.response.data.error || "An error occurred on the server."
+                : "Network error. Please try again.",
+        };
+    }
 }
 
 export async function deleteService(serviceId) {
@@ -328,11 +333,13 @@ export async function deleteService(serviceId) {
 	}
 }
 
-export async function updateService(servicePackId, serviceName, price, validityPeriod, description) {
+export async function updateService(servicePackId, serviceName, price, validityPeriod, benefit, displayPosition, description) {
 	const data = {
 		serviceName: serviceName,
 		price: price,
 		validityPeriod: validityPeriod,
+		benefit: benefit,
+		displayPosition: displayPosition,
 		description: description
 	};
 
@@ -645,4 +652,71 @@ export async function getTotalAmountsByMonth() {
 			error.response?.data?.message || "Error fetching total amounts by month."
 		);
 	}
+}
+
+export async function getAllReports() {
+	try {
+		const response = await api.get("api/report/all-reports", {
+			headers: getHeader(), 
+		});
+		if (response.status === 204 || !response.data || response.data.length === 0) {
+			return [];
+		}
+		return response.data; 
+	} catch (error) {
+		console.error("Error fetching reports:", error);
+		throw new Error(`Error fetching reports: ${error.response?.data?.message || error.message}`);
+	}
+}
+
+export async function getTotalAmountsByQuarter(year) {
+    try {
+        const response = await api.get(`/api/order/total-amounts-by-quarter/${year}`, {
+            headers: getHeader(),
+        });
+        return response.data; 
+    } catch (error) {
+        console.error(`Error fetching total amounts by quarter: ${error.message}`);
+        throw error;
+    }
+}
+
+export async function getTotalAmountsByYear() {
+    try {
+        const response = await api.get("/api/order/total-amounts-by-year", {
+            headers: getHeader(),
+        });
+        return response.data; 
+    } catch (error) {
+        console.error(`Error fetching total amounts by year: ${error.message}`);
+        throw error;
+    }
+}
+
+export async function getTopSpendingEmployer() {
+    try {
+        const response = await api.get("/api/order/top-spending-employer", {
+            headers: getHeader(),
+        });
+        return response.data;
+    } catch (error) {
+        if (error.response?.status === 404) {
+            console.warn("No top spending employer found.");
+            return null;
+        }
+        console.error(`Error fetching top spending employer: ${error.message}`);
+        throw error;
+    }
+}
+
+export async function getTotalAmountsByEmployer() {
+    try {
+        const response = await api.get("/api/order/total-amounts-by-employer", {
+            headers: getHeader(),
+        });
+        return response.data; 
+    } catch (error) {
+        console.error(`Error fetching total amounts by employer: ${error.message}`);
+        throw error;
+    }
 }

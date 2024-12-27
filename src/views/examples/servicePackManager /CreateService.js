@@ -11,32 +11,40 @@ import {
     Input,
     Button,
 } from "reactstrap";
+import { notification } from "antd";
 import Header from "components/Headers/Header.js";
 import { createService, checkRoleAdmin } from "components/utils/ApiFunctions";
-import 'react-quill/dist/quill.snow.css';
+import "react-quill/dist/quill.snow.css";
 
 const CreateService = () => {
     const [newService, setNewService] = useState({
         serviceName: "",
         price: "",
         validityPeriod: "",
+        benefit: "",
+        displayPosition: "",
         description: "",
     });
-    const [errorMessage, setErrorMessage] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
     const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         const checkAdminRole = async () => {
             const token = localStorage.getItem("token");
-            if (token) {
-                const result = await checkRoleAdmin(token);
-                setIsAdmin(result);
-                if (!result) {
-                    setErrorMessage("Access restricted to admins only.");
-                }
-            } else {
-                setErrorMessage("No token found. Please log in as an admin.");
+            if (!token) {
+                notification.error({
+                    message: "Authentication Error",
+                    description: "No token found. Please log in as an admin.",
+                });
+                return;
+            }
+
+            const result = await checkRoleAdmin(token);
+            setIsAdmin(result);
+            if (!result) {
+                notification.error({
+                    message: "Access Denied",
+                    description: "Access restricted to admins only.",
+                });
             }
         };
         checkAdminRole();
@@ -44,13 +52,16 @@ const CreateService = () => {
 
     const handleServiceInputChange = (e) => {
         const { name, value } = e.target;
-        setNewService({ ...newService, [name]: value });
+        setNewService((prevState) => ({ ...prevState, [name]: value }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!isAdmin) {
-            setErrorMessage("You do not have permission to create services.");
+            notification.error({
+                message: "Permission Denied",
+                description: "You do not have permission to create services.",
+            });
             return;
         }
 
@@ -59,25 +70,39 @@ const CreateService = () => {
                 newService.serviceName,
                 newService.price,
                 newService.validityPeriod,
+                newService.benefit,
+                newService.displayPosition,
                 newService.description
             );
 
             if (response.success) {
-                setSuccessMessage(response.message);
+                notification.success({
+                    message: "Success",
+                    description: response.message,
+                });
                 setNewService({
                     serviceName: "",
                     price: "",
                     validityPeriod: "",
+                    benefit: "",
+                    displayPosition: "",
                     description: "",
                 });
-                setErrorMessage("");
             } else {
-                setErrorMessage(response.message);
+                notification.error({
+                    message: "Error",
+                    description: response.message,
+                });
             }
         } catch (error) {
-            setErrorMessage(error.message);
+            notification.error({
+                message: "Error",
+                description: error.message || "An unexpected error occurred.",
+            });
         }
     };
+
+    const isFormComplete = Object.values(newService).every((value) => value.trim() !== "");
 
     return (
         <>
@@ -91,8 +116,6 @@ const CreateService = () => {
                             </CardHeader>
                             <CardBody>
                                 <Form role="form" onSubmit={handleSubmit}>
-                                    {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
-                                    {successMessage && <div className="alert alert-success">{successMessage}</div>}
                                     <FormGroup>
                                         <label htmlFor="serviceName">Service Name</label>
                                         <Input
@@ -130,6 +153,30 @@ const CreateService = () => {
                                         />
                                     </FormGroup>
                                     <FormGroup>
+                                        <label htmlFor="benefit">Benefit</label>
+                                        <Input
+                                            type="number"
+                                            id="benefit"
+                                            name="benefit"
+                                            placeholder="Enter benefit"
+                                            value={newService.benefit}
+                                            onChange={handleServiceInputChange}
+                                            required
+                                        />
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <label htmlFor="displayPosition">Display Position</label>
+                                        <Input
+                                            type="text"
+                                            id="displayPosition"
+                                            name="displayPosition"
+                                            placeholder="Enter display position"
+                                            value={newService.displayPosition}
+                                            onChange={handleServiceInputChange}
+                                            required
+                                        />
+                                    </FormGroup>
+                                    <FormGroup>
                                         <label htmlFor="description">Description</label>
                                         <Input
                                             type="textarea"
@@ -142,7 +189,11 @@ const CreateService = () => {
                                             rows="5"
                                         />
                                     </FormGroup>
-                                    <Button type="submit" color="primary" disabled={!isAdmin}>
+                                    <Button
+                                        type="submit"
+                                        color="primary"
+                                        disabled={!isAdmin || !isFormComplete}
+                                    >
                                         Create Service
                                     </Button>
                                 </Form>

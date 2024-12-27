@@ -3,10 +3,6 @@ import {
   Card,
   CardHeader,
   CardFooter,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
   Pagination,
   PaginationItem,
   PaginationLink,
@@ -17,6 +13,8 @@ import {
 } from "reactstrap";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
+import { message } from "antd";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons"; 
 import Header from "components/Headers/Header.js";
 import { getAllService, checkRoleAdmin, deleteService } from "components/utils/ApiFunctions";
 
@@ -29,8 +27,6 @@ const Service = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const servicesPerPage = 5;
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
   const navigate = useNavigate();
 
@@ -94,20 +90,16 @@ const Service = () => {
     try {
       const result = await deleteService(serviceId);
       if (result === "") {
-        setSuccessMessage(`Service No ${serviceId} was deleted.`);
+        message.success(`Service No ${serviceId} was deleted.`);
         const updatedServices = await getAllService();
         setServices(updatedServices);
         setFilteredServices(updatedServices);
       } else {
-        setErrorMessage(`Error deleting service: ${result.message}`);
+        message.error(`Error deleting service: ${result.message}`);
       }
     } catch (error) {
-      setErrorMessage(error.message);
+      message.error(error.message);
     }
-    setTimeout(() => {
-      setSuccessMessage("");
-      setErrorMessage("");
-    }, 3000);
   };
 
   const indexOfLastService = currentPage * servicesPerPage;
@@ -154,6 +146,8 @@ const Service = () => {
                     <th scope="col">Service Name</th>
                     <th scope="col">Price</th>
                     <th scope="col">Validity Period</th>
+                    <th scope="col">Benefit</th>
+                    <th scope="col">Display Position</th>
                     <th scope="col">Description</th>
                     <th scope="col">Created Date</th>
                     <th scope="col">Actions</th>
@@ -173,26 +167,25 @@ const Service = () => {
                       <td colSpan="8" className="text-center">No services found.</td>
                     </tr>
                   ) : isAdmin ? (
-                    currentServices.map((service) => (
+                    currentServices.map((service, index) => (
                       <tr key={service.id}>
-                        <th scope="row">{service.id}</th>
+                        <th scope="row">{indexOfFirstService + index + 1}</th>
                         <td>{service.serviceName}</td>
                         <td>{service.price}<span> VNĐ</span></td>
                         <td>{service.validityPeriod}<span> ngày</span></td>
+                        <td>{service.benefit}<span> bài tuyển dụng</span></td>
+                        <td>{service.displayPosition}</td>
                         <td>{service.description}</td>
                         <td>{service.createAt ? format(new Date(service.createAt), "dd/MM/yyyy") : "N/A"}</td>
-                        <td>
-                          <UncontrolledDropdown>
-                            <DropdownToggle className="btn-icon-only text-light" size="sm">
-                              <i className="fas fa-ellipsis-v" />
-                            </DropdownToggle>
-                            <DropdownMenu className="dropdown-menu-arrow" right>
-                              <DropdownItem onClick={() => handleDelete(service.id)}>Delete</DropdownItem>
-                              <DropdownItem onClick={() => navigate(`/admin/update-service/${service.id}`, { state: service })}>
-                                Edit
-                              </DropdownItem>
-                            </DropdownMenu>
-                          </UncontrolledDropdown>
+                        <td className="d-flex">
+                          <DeleteOutlined
+                            onClick={() => handleDelete(service.id)}
+                            style={{ color: "red", cursor: "pointer", marginRight: "10px" }}
+                          />
+                          <EditOutlined
+                            onClick={() => navigate(`/admin/update-service/${service.id}`, { state: service })}
+                            style={{ color: "blue", cursor: "pointer" }}
+                          />
                         </td>
                       </tr>
                     ))
@@ -234,11 +227,8 @@ const Service = () => {
                     </Pagination>
                   </nav>
                 </CardFooter>
-
               )}
             </Card>
-            {successMessage && <div className="alert alert-success">{successMessage}</div>}
-            {errorMessage && <div className="alert alert-danger">{errorMessage}</div>}
           </div>
         </Row>
       </Container>
